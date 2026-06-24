@@ -87,8 +87,9 @@
                     <a href="{{ route('virtual-hosts.create') }}" class="hover:text-indigo-200"><i class="fas fa-plus-circle mr-1"></i>Novo Host</a>
                     <a href="{{ route('settings.index') }}" class="hover:text-indigo-200"><i class="fas fa-cog mr-1"></i>Config</a>
                     @php
-                        $apacheOnline = false;
-                        try { $apacheOnline = app(\App\Services\ApacheService::class)->isRunning(); } catch (\Throwable) {}
+                        $apacheOnline = \Illuminate\Support\Facades\Cache::remember('apache_running', 10, function () {
+                            try { return app(\App\Services\ApacheService::class)->isRunning(); } catch (\Throwable) { return false; }
+                        });
                     @endphp
                     <span class="flex items-center gap-1 text-xs {{ $apacheOnline ? 'text-green-300' : 'text-red-300' }}" title="Apache {{ $apacheOnline ? 'rodando' : 'parado' }}">
                         <i class="fas {{ $apacheOnline ? 'fa-check-circle' : 'fa-times-circle' }}"></i>
@@ -143,6 +144,10 @@
         <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
             <span>Desenvolvido por <a href="https://lab.werneck.dev.br/" class="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium" target="_blank">Werneck Lab</a> &copy; 2024 - {{ date('Y') }}</span>
             <span class="flex items-center gap-2">
+                <i class="fab fa-laravel text-red-500"></i>
+                Desenvolvido em Laravel
+            </span>
+            <span class="flex items-center gap-2">
                 <i class="fas fa-tag"></i> v{{ config('app.version') }}
                 <span class="text-gray-300 dark:text-gray-600">|</span>
                 <i class="fas fa-server"></i> Hosts Manager
@@ -172,6 +177,11 @@
                 setTimeout(function () { el.remove(); }, 300);
             }, 5000);
         });
+
+        function openExplorer() {
+            var path = document.getElementById('document_root').value.replace(/\//g, '\\');
+            window.open('file:///' + path, '_blank');
+        }
 
         function copyToClipboard(text) {
             if (navigator.clipboard && navigator.clipboard.writeText) {

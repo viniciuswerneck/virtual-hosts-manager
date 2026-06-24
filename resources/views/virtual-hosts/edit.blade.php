@@ -35,12 +35,6 @@
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
-            <script>
-                function openExplorer() {
-                    var path = document.getElementById('document_root').value.replace(/\//g, '\\');
-                    window.open('file:///' + path, '_blank');
-                }
-            </script>
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-plug mr-1 text-gray-500"></i>Porta</label>

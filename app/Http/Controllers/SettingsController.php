@@ -38,13 +38,24 @@ class SettingsController extends Controller
             'hosts_file', 'mkcert_bin', 'mkcert_dir', 'default_document_root',
         ];
 
+        $rules = [];
         foreach ($keys as $key) {
             if ($request->has($key)) {
-                Setting::updateOrCreate(
-                    ['key' => $key],
-                    ['value' => $request->input($key)]
-                );
+                $rule = 'string';
+                if ($key === 'apache_ssl_port') {
+                    $rule = 'integer|min:1|max:65535';
+                }
+                $rules[$key] = "required|{$rule}";
             }
+        }
+
+        $validated = $request->validate($rules);
+
+        foreach ($validated as $key => $value) {
+            Setting::updateOrCreate(
+                ['key' => $key],
+                ['value' => $value]
+            );
         }
 
         return redirect()->route('settings.index')

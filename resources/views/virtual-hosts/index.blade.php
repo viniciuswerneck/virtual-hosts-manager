@@ -3,44 +3,54 @@
 @section('title', 'Virtual Hosts')
 
 @section('content')
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-start justify-between mb-6 gap-4 flex-wrap">
         <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-globe mr-2 text-indigo-600"></i>Virtual Hosts</h1>
-        <div class="flex gap-2">
+        <div class="flex gap-2 flex-wrap">
             <a href="{{ route('virtual-hosts.sync') }}"
-               class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm"
+               class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm inline-flex items-center"
                onclick="return confirm('Importar todos os hosts do Apache para o banco?')">
                 <i class="fas fa-sync-alt mr-1"></i> Sincronizar do Apache
             </a>
+            <a href="{{ route('virtual-hosts.export') }}"
+               class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm inline-flex items-center">
+                <i class="fas fa-download mr-1"></i> Exportar
+            </a>
+            <form action="{{ route('virtual-hosts.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <label class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm inline-flex items-center cursor-pointer">
+                    <i class="fas fa-upload mr-1"></i> Importar
+                    <input type="file" name="backup_file" accept=".json" class="hidden" onchange="this.form.submit()">
+                </label>
+            </form>
             <a href="{{ route('virtual-hosts.create') }}"
-               class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm">
+               class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm inline-flex items-center">
                 <i class="fas fa-plus-circle mr-1"></i> Novo Virtual Host
             </a>
-            <form action="{{ route('virtual-hosts.restart') }}" method="POST" class="inline restart-form"
+            <form action="{{ route('virtual-hosts.restart') }}" method="POST" class="restart-form"
                   onsubmit="return confirm('Reiniciar o Apache agora? A operacao pode levar alguns segundos.')">
                 @csrf
                 <button type="submit"
-                   class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm">
+                   class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm inline-flex items-center">
                     <i class="fas fa-redo-alt mr-1"></i> Reiniciar Apache
                 </button>
             </form>
         </div>
     </div>
 
-    <div class="mb-4">
-        <form method="GET" action="{{ route('virtual-hosts.index') }}" class="flex gap-2" id="search-form">
-            <div class="relative flex-1 max-w-md">
-                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                <input type="text" name="search" id="search-input" value="{{ $search ?? '' }}" placeholder="Buscar por nome, diretório ou observações..."
-                       class="w-full border rounded pl-8 pr-3 py-2 text-sm bg-white">
-            </div>
-            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm">
-                <i class="fas fa-search mr-1"></i> Buscar
-            </button>
-            @if ($search)
-                <a href="{{ route('virtual-hosts.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm">
-                    <i class="fas fa-times mr-1"></i> Limpar
-                </a>
-            @endif
+    <div class="mb-6">
+        <form method="GET" action="{{ route('virtual-hosts.index') }}" id="search-form">
+            <label for="search-input"
+                   class="flex items-center gap-3 w-full border-2 border-gray-200 dark:border-gray-600 rounded-full px-4 py-3 bg-gray-50 dark:bg-gray-700 focus-within:border-indigo-400 dark:focus-within:border-indigo-500 focus-within:bg-white dark:focus-within:bg-gray-700 focus-within:ring-2 focus-within:ring-indigo-100 dark:focus-within:ring-indigo-900 transition-all">
+                <i class="fas fa-search text-gray-400 dark:text-gray-500 flex-shrink-0"></i>
+                <input type="text" name="search" id="search-input" value="{{ $search ?? '' }}"
+                       placeholder="Buscar por nome, diretório ou observações..."
+                       class="flex-1 bg-transparent outline-none border-none text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 min-w-0">
+                @if ($search)
+                    <a href="{{ route('virtual-hosts.index') }}" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors flex-shrink-0" title="Limpar busca">
+                        <i class="fas fa-times-circle"></i>
+                    </a>
+                @endif
+            </label>
         </form>
     </div>
     <script>
@@ -60,6 +70,12 @@
             }
         })();
     </script>
+
+    @if ($search)
+        <div class="mb-3 text-sm text-gray-500">
+            <i class="fas fa-filter mr-1"></i> Resultados para "<strong>{{ $search }}</strong>" — {{ $vhosts->total() }} encontrado{{ $vhosts->total() !== 1 ? 's' : '' }}
+        </div>
+    @endif
 
     <div class="bg-white rounded shadow overflow-hidden">
         <table class="w-full text-sm">

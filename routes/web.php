@@ -4,7 +4,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\VirtualHostController;
 use Illuminate\Support\Facades\Route;
 
-Route::match(['get', 'post'], '/admin/logout', function (\Illuminate\Http\Request $request) {
+Route::post('/admin/logout', function (\Illuminate\Http\Request $request) {
     $request->session()->forget('admin_authenticated');
     return redirect()->route('admin.login');
 })->name('admin.logout');
@@ -51,4 +51,6 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::get('/sync-apache', [VirtualHostController::class, 'sync'])->name('virtual-hosts.sync');
     Route::post('/restart-apache', [VirtualHostController::class, 'restartApache'])->name('virtual-hosts.restart');
     Route::post('/virtual-hosts/{virtual_host}/regenerate-cert', [VirtualHostController::class, 'regenerateCert'])->name('virtual-hosts.regenerate-cert');
+    Route::get('/virtual-hosts/export/json', [VirtualHostController::class, 'exportJson'])->name('virtual-hosts.export');
+    Route::post('/virtual-hosts/import/json', [VirtualHostController::class, 'importJson'])->name('virtual-hosts.import');
 });
