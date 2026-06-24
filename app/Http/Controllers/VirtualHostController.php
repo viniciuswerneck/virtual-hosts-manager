@@ -136,7 +136,7 @@ class VirtualHostController extends Controller
         if (str_contains($msg, 'Acesso negado') || str_contains($msg, 'Access denied')) {
             return [
                 'type' => 'warning',
-                'message' => 'Apache precisa ser reiniciado manualmente como Administrador. No PowerShell Admin: net stop Apache2.4 && net start Apache2.4',
+                'message' => 'Apache precisa ser reiniciado manualmente como Administrador. No PowerShell Admin: net stop ' . config('virtualhosts.apache_service') . ' && net start ' . config('virtualhosts.apache_service'),
             ];
         }
 
@@ -174,7 +174,7 @@ class VirtualHostController extends Controller
         $output = $result['output'];
         if (str_contains($output, 'Acesso negado') || str_contains($output, 'Access denied')) {
             return redirect()->route('virtual-hosts.index')
-                ->with('error', 'Permissão negada para reiniciar o Apache. Execute manualmente no PowerShell como Administrador: net stop Apache2.4 && net start Apache2.4');
+                ->with('error', 'Permissão negada para reiniciar o Apache. Execute manualmente no PowerShell como Administrador: net stop ' . config('virtualhosts.apache_service') . ' && net start ' . config('virtualhosts.apache_service'));
         }
 
         return redirect()->route('virtual-hosts.index')

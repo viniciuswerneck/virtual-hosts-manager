@@ -11,8 +11,8 @@ class MkcertService
 
     public function __construct()
     {
-        $this->mkcertBin = 'C:/mkcert/mkcert.exe';
-        $this->certDir = 'C:/mkcert';
+        $this->mkcertBin = config('virtualhosts.mkcert_bin');
+        $this->certDir = config('virtualhosts.mkcert_dir');
     }
 
     public function certExists(string $serverName): bool

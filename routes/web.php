@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\VirtualHostController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,9 @@ Route::resource('virtual-hosts', VirtualHostController::class)->names([
     'update' => 'virtual-hosts.update',
     'destroy' => 'virtual-hosts.destroy',
 ]);
+
+Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
 
 Route::get('/sync-apache', [VirtualHostController::class, 'sync'])->name('virtual-hosts.sync');
 Route::post('/restart-apache', [VirtualHostController::class, 'restartApache'])->name('virtual-hosts.restart');
