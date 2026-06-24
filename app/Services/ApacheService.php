@@ -11,12 +11,14 @@ class ApacheService
     private string $vhostsFile;
     private string $apacheBin;
     private string $apacheService;
+    private int $sslPort;
 
     public function __construct()
     {
         $this->vhostsFile = config('virtualhosts.apache_vhosts_file');
         $this->apacheBin = config('virtualhosts.apache_bin');
         $this->apacheService = config('virtualhosts.apache_service', 'Apache2.4');
+        $this->sslPort = (int) config('virtualhosts.apache_ssl_port', 443);
     }
 
     public function getVhostsFile(): string
@@ -84,7 +86,7 @@ class ApacheService
             $lines[] = '';
 
             if ($vhost['ssl_enabled']) {
-                $lines[] = "<VirtualHost *:443>";
+                $lines[] = "<VirtualHost *:{$this->sslPort}>";
                 $lines[] = "    ServerName {$name}";
                 $lines[] = "    DocumentRoot \"{$root}\"";
                 $lines[] = '';
@@ -115,43 +117,69 @@ class ApacheService
 
     public function restart(): array
     {
-        $process = new Process([$this->apacheBin, '-k', 'restart']);
-        $process->run();
-        sleep(1);
+        $output = $this->safeRun([$this->apacheBin, '-k', 'restart'], 5);
+        $httpdOutput = $output !== null ? $output : '';
 
-        if ($process->isSuccessful() && $this->isRunning()) {
-            $output = $process->getOutput() ?: $process->getErrorOutput();
-            return ['success' => true, 'output' => $output];
+        if ($this->waitForRunning(3)) {
+            return ['success' => true, 'output' => $httpdOutput];
         }
 
-        if ($this->isRunning()) {
-            $kill = new Process(['taskkill', '/F', '/IM', 'httpd.exe']);
-            $kill->run();
-            sleep(1);
-        }
+        $this->safeRun(['taskkill', '/F', '/IM', 'httpd.exe'], 3);
+        $this->waitForNotRunning(2);
 
-        $start = new Process([$this->apacheBin]);
-        $start->run();
-        sleep(2);
+        $startOutput = $this->safeRun([$this->apacheBin], 5);
 
-        if ($this->isRunning()) {
+        if ($this->waitForRunning(3)) {
             return ['success' => true, 'output' => 'Apache reiniciado manualmente.'];
         }
 
-        $netStop = new Process(['net', 'stop', $this->apacheService]);
-        $netStop->run();
-        sleep(1);
+        $this->safeRun(['net', 'stop', $this->apacheService], 5);
+        $this->waitForNotRunning(2);
 
-        $netStart = new Process(['net', 'start', $this->apacheService]);
-        $netStart->run();
-        sleep(2);
+        $this->safeRun(['net', 'start', $this->apacheService], 5);
 
-        if ($this->isRunning()) {
+        if ($this->waitForRunning(5)) {
             return ['success' => true, 'output' => "Apache reiniciado via servico {$this->apacheService}."];
         }
 
-        $errorMsg = $start->getOutput() ?: $start->getErrorOutput() ?: 'Falha ao iniciar Apache (sem resposta do binário)';
+        $errorMsg = $startOutput ?: 'Falha ao iniciar Apache (sem resposta do binário)';
         return ['success' => false, 'output' => $errorMsg];
+    }
+
+    private function safeRun(array $command, int $timeout): ?string
+    {
+        try {
+            $process = new Process($command);
+            $process->setTimeout($timeout);
+            $process->run();
+            return $process->getOutput() ?: $process->getErrorOutput();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function waitForRunning(int $timeoutSeconds): bool
+    {
+        $deadline = microtime(true) + $timeoutSeconds;
+        while (microtime(true) < $deadline) {
+            if ($this->isRunning()) {
+                return true;
+            }
+            usleep(200000);
+        }
+        return $this->isRunning();
+    }
+
+    private function waitForNotRunning(int $timeoutSeconds): bool
+    {
+        $deadline = microtime(true) + $timeoutSeconds;
+        while (microtime(true) < $deadline) {
+            if (!$this->isRunning()) {
+                return true;
+            }
+            usleep(200000);
+        }
+        return !$this->isRunning();
     }
 
     public function isRunning(): bool
@@ -161,9 +189,14 @@ class ApacheService
 
     private function tasklist(): array
     {
-        $process = new Process(['tasklist', '/NH', '/FI', 'IMAGENAME eq httpd.exe']);
-        $process->run();
-        return $process->isSuccessful() ? array_filter(explode("\n", $process->getOutput())) : [];
+        try {
+            $process = new Process(['tasklist', '/NH', '/FI', 'IMAGENAME eq httpd.exe']);
+            $process->setTimeout(3);
+            $process->run();
+            return $process->isSuccessful() ? array_filter(explode("\n", $process->getOutput())) : [];
+        } catch (\Throwable) {
+            return [];
+        }
     }
 
     public function testConfig(): array
