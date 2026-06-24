@@ -113,16 +113,12 @@
     </main>
 
     <footer class="border-t border-gray-200 dark:border-gray-700 mt-12">
-        <div class="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
-            <span>
-                <i class="fas fa-code mr-1"></i> Desenvolvido por
-                <a href="https://lab.werneck.dev.br/" class="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium" target="_blank">Werneck Lab</a>
-                &copy; 2024 - {{ date('Y') }}
-            </span>
+        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
+            <span>Desenvolvido por <a href="https://lab.werneck.dev.br/" class="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium" target="_blank">Werneck Lab</a> &copy; 2024 - {{ date('Y') }}</span>
             <span class="flex items-center gap-2">
-                <i class="fas fa-tag mr-1"></i> v{{ env('APP_VERSION', '1.0.0') }}
+                <i class="fas fa-tag"></i> v{{ env('APP_VERSION', '1.0.0') }}
                 <span class="text-gray-300 dark:text-gray-600">|</span>
-                <i class="fas fa-server mr-1"></i> Hosts Manager
+                <i class="fas fa-server"></i> Hosts Manager
             </span>
         </div>
     </footer>
