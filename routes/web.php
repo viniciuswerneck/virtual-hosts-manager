@@ -4,7 +4,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\VirtualHostController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/admin/logout', function (\Illuminate\Http\Request $request) {
+Route::match(['get', 'post'], '/admin/logout', function (\Illuminate\Http\Request $request) {
     $request->session()->forget('admin_authenticated');
     return redirect()->route('admin.login');
 })->name('admin.logout');

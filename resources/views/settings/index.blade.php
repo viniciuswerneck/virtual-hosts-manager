@@ -40,6 +40,8 @@
         <form action="{{ route('settings.update') }}" method="POST">
             @csrf
 
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b"><i class="fas fa-server mr-2 text-indigo-600"></i>Apache</h2>
+
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-file-code mr-1 text-gray-500"></i>Arquivo de Configuração do Apache</label>
                 <div class="flex gap-1 items-center">
@@ -84,16 +86,7 @@
                 <p class="text-gray-400 text-xs mt-1">Porta padrão para VirtualHosts SSL (padrão: 443)</p>
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-network-wired mr-1 text-gray-500"></i>Arquivo Hosts do Windows</label>
-                <div class="flex gap-1 items-center">
-                    <input type="text" name="hosts_file" id="hosts_file" value="{{ old('hosts_file', $config['hosts_file']) }}"
-                           class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-white">
-                    <span class="text-lg">{{ $exists['hosts_file'] ? '✅' : '❌' }}</span>
-                    <button type="button" onclick="restore('hosts_file', '{{ $defaults['hosts_file'] }}')" class="text-gray-400 hover:text-gray-600 text-xs" title="Restaurar padrão">↩</button>
-                </div>
-                <p class="text-gray-400 text-xs mt-1">Ex: C:/Windows/System32/drivers/etc/hosts</p>
-            </div>
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b mt-8"><i class="fas fa-shield-alt mr-2 text-indigo-600"></i>SSL / Certificados</h2>
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-shield-alt mr-1 text-gray-500"></i>Binário do mkcert</label>
@@ -115,6 +108,19 @@
                     <button type="button" onclick="restore('mkcert_dir', '{{ $defaults['mkcert_dir'] }}')" class="text-gray-400 hover:text-gray-600 text-xs" title="Restaurar padrão">↩</button>
                 </div>
                 <p class="text-gray-400 text-xs mt-1">Ex: C:/mkcert</p>
+            </div>
+
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b mt-8"><i class="fas fa-folder mr-2 text-indigo-600"></i>Paths</h2>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-network-wired mr-1 text-gray-500"></i>Arquivo Hosts do Windows</label>
+                <div class="flex gap-1 items-center">
+                    <input type="text" name="hosts_file" id="hosts_file" value="{{ old('hosts_file', $config['hosts_file']) }}"
+                           class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-white">
+                    <span class="text-lg">{{ $exists['hosts_file'] ? '✅' : '❌' }}</span>
+                    <button type="button" onclick="restore('hosts_file', '{{ $defaults['hosts_file'] }}')" class="text-gray-400 hover:text-gray-600 text-xs" title="Restaurar padrão">↩</button>
+                </div>
+                <p class="text-gray-400 text-xs mt-1">Ex: C:/Windows/System32/drivers/etc/hosts</p>
             </div>
 
             <div class="mb-4">
