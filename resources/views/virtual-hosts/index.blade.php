@@ -95,9 +95,9 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 text-right whitespace-nowrap">
-                            <a href="{{ route('virtual-hosts.show', $vhost) }}"
+                            <a href="{{ route('virtual-hosts.show', $vhost) }}" title="Ver detalhes"
                                class="text-gray-600 hover:text-gray-900 text-xs font-medium mr-1"><i class="fas fa-eye"></i></a>
-                            <a href="{{ route('virtual-hosts.edit', $vhost) }}"
+                            <a href="{{ route('virtual-hosts.edit', $vhost) }}" title="Editar"
                                class="text-indigo-600 hover:text-indigo-900 text-xs font-medium mr-1"><i class="fas fa-edit"></i></a>
                             <form action="{{ route('virtual-hosts.regenerate-cert', $vhost) }}" method="POST" class="inline"
                                   onsubmit="return confirm('Regenerar certificado SSL de {{ $vhost->server_name }}?')">
