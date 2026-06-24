@@ -14,6 +14,10 @@ class SettingsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if ($this->app->runningInConsole()) {
+            return;
+        }
+
         try {
             $settings = Setting::pluck('value', 'key')->toArray();
 
@@ -23,7 +27,9 @@ class SettingsServiceProvider extends ServiceProvider
                 }
             }
         } catch (\Throwable $e) {
-            //
+            if ($this->app->runningInConsole()) {
+                $this->app->make('log')->warning('SettingsServiceProvider: nao foi possivel carregar configuracoes do banco: ' . $e->getMessage());
+            }
         }
     }
 }

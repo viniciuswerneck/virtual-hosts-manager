@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Process\Process;
 
 class MkcertService
 {
@@ -22,13 +23,17 @@ class MkcertService
 
     public function generate(string $serverName): array
     {
-        $output = [];
-        $returnVar = 0;
-        $cmd = "\"{$this->mkcertBin}\" -cert-file \"{$this->certDir}/{$serverName}.pem\" -key-file \"{$this->certDir}/{$serverName}-key.pem\" {$serverName} 2>&1";
-        exec($cmd, $output, $returnVar);
+        $process = new Process([
+            $this->mkcertBin,
+            '-cert-file', "{$this->certDir}/{$serverName}.pem",
+            '-key-file', "{$this->certDir}/{$serverName}-key.pem",
+            $serverName,
+        ]);
+        $process->run();
+
         return [
-            'success' => $returnVar === 0,
-            'output' => implode("\n", $output),
+            'success' => $process->isSuccessful(),
+            'output' => $process->getOutput() ?: $process->getErrorOutput(),
         ];
     }
 

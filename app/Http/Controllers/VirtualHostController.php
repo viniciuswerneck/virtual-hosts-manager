@@ -7,7 +7,7 @@ use App\Models\VirtualHost;
 use App\Services\ApacheService;
 use App\Services\HostsFileService;
 use App\Services\MkcertService;
-use Illuminate\Http\Request;
+use App\Services\VhostManagerService;
 use RuntimeException;
 
 class VirtualHostController extends Controller
@@ -31,8 +31,12 @@ class VirtualHostController extends Controller
         return view('virtual-hosts.create');
     }
 
-    public function store(StoreVirtualHostRequest $request, ApacheService $apache, HostsFileService $hosts, MkcertService $mkcert)
-    {
+    public function store(
+        StoreVirtualHostRequest $request,
+        HostsFileService $hosts,
+        MkcertService $mkcert,
+        VhostManagerService $manager,
+    ) {
         $data = $request->validated();
         $serverName = $data['server_name'];
 
@@ -45,10 +49,10 @@ class VirtualHostController extends Controller
                 $mkcert->generate($serverName);
             }
 
-            $result = $this->applyApacheConfig($apache);
+            $result = $manager->applyApacheConfig();
 
             return redirect()->route('virtual-hosts.index')
-                ->with($result['type'], "Virtual host {$serverName} criado com sucesso! {$result['message']}");
+                ->with($result['type'], "Virtual host {$serverName} criado com sucesso!|{$result['message']}");
         } catch (RuntimeException $e) {
             if (isset($vhost)) {
                 $vhost->delete();
@@ -64,8 +68,13 @@ class VirtualHostController extends Controller
         return view('virtual-hosts.edit', compact('virtualHost'));
     }
 
-    public function update(StoreVirtualHostRequest $request, VirtualHost $virtualHost, ApacheService $apache, HostsFileService $hosts, MkcertService $mkcert)
-    {
+    public function update(
+        StoreVirtualHostRequest $request,
+        VirtualHost $virtualHost,
+        HostsFileService $hosts,
+        MkcertService $mkcert,
+        VhostManagerService $manager,
+    ) {
         $oldName = $virtualHost->server_name;
         $data = $request->validated();
         $newName = $data['server_name'];
@@ -87,10 +96,10 @@ class VirtualHostController extends Controller
 
             $virtualHost->update($data);
 
-            $result = $this->applyApacheConfig($apache);
+            $result = $manager->applyApacheConfig();
 
             return redirect()->route('virtual-hosts.index')
-                ->with($result['type'], "Virtual host {$newName} atualizado com sucesso!<br>{$result['message']}");
+                ->with($result['type'], "Virtual host {$newName} atualizado com sucesso!|{$result['message']}");
         } catch (RuntimeException $e) {
             return redirect()->back()
                 ->withInput()
@@ -98,8 +107,12 @@ class VirtualHostController extends Controller
         }
     }
 
-    public function destroy(VirtualHost $virtualHost, ApacheService $apache, HostsFileService $hosts, MkcertService $mkcert)
-    {
+    public function destroy(
+        VirtualHost $virtualHost,
+        HostsFileService $hosts,
+        MkcertService $mkcert,
+        VhostManagerService $manager,
+    ) {
         $name = $virtualHost->server_name;
 
         try {
@@ -108,62 +121,26 @@ class VirtualHostController extends Controller
 
             $virtualHost->delete();
 
-            $result = $this->applyApacheConfig($apache);
+            $result = $manager->applyApacheConfig();
 
             return redirect()->route('virtual-hosts.index')
-                ->with($result['type'], "Virtual host {$name} excluído com sucesso!<br>{$result['message']}");
+                ->with($result['type'], "Virtual host {$name} excluído com sucesso!|{$result['message']}");
         } catch (RuntimeException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
-    private function applyApacheConfig(ApacheService $apache): array
+    public function sync(VhostManagerService $manager)
     {
-        $allVhosts = VirtualHost::all()->toArray();
-        $apache->writeConfig($allVhosts);
-
-        $test = $apache->testConfig();
-        if (!$test['success']) {
-            throw new RuntimeException('Erro na configuração do Apache: ' . $test['output']);
-        }
-
-        $restart = $apache->restart();
-        if ($restart['success']) {
-            return ['type' => 'success', 'message' => 'Apache reiniciado automaticamente.'];
-        }
-
-        $msg = $restart['output'];
-        if (str_contains($msg, 'Acesso negado') || str_contains($msg, 'Access denied')) {
-            return [
-                'type' => 'warning',
-                'message' => 'Apache precisa ser reiniciado manualmente como Administrador. No PowerShell Admin: net stop ' . config('virtualhosts.apache_service') . ' && net start ' . config('virtualhosts.apache_service'),
-            ];
-        }
-
-        return ['type' => 'warning', 'message' => 'Aviso: ' . $msg];
-    }
-
-    public function sync(ApacheService $apache)
-    {
-        $apacheVhosts = $apache->parseExisting();
-
-        foreach ($apacheVhosts as $v) {
-            VirtualHost::firstOrCreate(
-                ['server_name' => $v['server_name']],
-                [
-                    'document_root' => $v['document_root'],
-                    'ssl_enabled' => $v['ssl_enabled'],
-                    'port' => $v['port'],
-                ]
-            );
-        }
+        $count = $manager->syncFromApache();
 
         return redirect()->route('virtual-hosts.index')
-            ->with('success', count($apacheVhosts) . ' virtual hosts importados do Apache com sucesso!');
+            ->with('success', "{$count} virtual hosts importados do Apache com sucesso!");
     }
 
     public function restartApache(ApacheService $apache)
     {
+        $service = config('virtualhosts.apache_service');
         $result = $apache->restart();
 
         if ($result['success']) {
@@ -174,19 +151,22 @@ class VirtualHostController extends Controller
         $output = $result['output'];
         if (str_contains($output, 'Acesso negado') || str_contains($output, 'Access denied')) {
             return redirect()->route('virtual-hosts.index')
-                ->with('error', 'Permissão negada para reiniciar o Apache. Execute manualmente no PowerShell como Administrador: net stop ' . config('virtualhosts.apache_service') . ' && net start ' . config('virtualhosts.apache_service'));
+                ->with('error', "Permissão negada. Execute no PowerShell como Administrador: net stop {$service} && net start {$service}");
+        }
+
+        if (str_contains($output, 'AH00141') || str_contains($output, 'random number generator')) {
+            return redirect()->route('virtual-hosts.index')
+                ->with('warning', "Apache com erro de SSL (AH00141). Tente reiniciar manualmente no PowerShell como Administrador: net stop {$service} && net start {$service}. Se persistir, edite o httpd.conf e comente a linha 'LoadModule ssl_module' se nao precisar de SSL.");
         }
 
         return redirect()->route('virtual-hosts.index')
             ->with('error', 'Erro ao reiniciar Apache: ' . $output);
     }
 
-    public function regenerateCert(VirtualHost $virtualHost, MkcertService $mkcert)
+    public function regenerateCert(VirtualHost $virtualHost, VhostManagerService $manager)
     {
         $name = $virtualHost->server_name;
-
-        $mkcert->delete($name);
-        $result = $mkcert->generate($name);
+        $result = $manager->regenerateCert($virtualHost);
 
         if ($result['success']) {
             return redirect()->route('virtual-hosts.index')

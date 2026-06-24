@@ -3,17 +3,20 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Process\Process;
 use Throwable;
 
 class ApacheService
 {
     private string $vhostsFile;
     private string $apacheBin;
+    private string $apacheService;
 
     public function __construct()
     {
         $this->vhostsFile = config('virtualhosts.apache_vhosts_file');
         $this->apacheBin = config('virtualhosts.apache_bin');
+        $this->apacheService = config('virtualhosts.apache_service', 'Apache2.4');
     }
 
     public function getVhostsFile(): string
@@ -112,30 +115,42 @@ class ApacheService
 
     public function restart(): array
     {
-        $output = [];
-        $returnVar = 0;
-
-        exec("\"{$this->apacheBin}\" -k restart 2>&1", $output, $returnVar);
+        $process = new Process([$this->apacheBin, '-k', 'restart']);
+        $process->run();
         sleep(1);
 
-        if ($returnVar === 0 && $this->isRunning()) {
-            return ['success' => true, 'output' => implode("\n", $output)];
+        if ($process->isSuccessful() && $this->isRunning()) {
+            $output = $process->getOutput() ?: $process->getErrorOutput();
+            return ['success' => true, 'output' => $output];
         }
 
-        $taskOut = $this->tasklist();
-        if (count($taskOut) >= 2) {
-            exec("taskkill /F /IM httpd.exe 2>&1", $killOut, $killVar);
+        if ($this->isRunning()) {
+            $kill = new Process(['taskkill', '/F', '/IM', 'httpd.exe']);
+            $kill->run();
             sleep(1);
         }
 
-        exec("\"{$this->apacheBin}\" 2>&1", $startOut, $startVar);
+        $start = new Process([$this->apacheBin]);
+        $start->run();
         sleep(2);
 
         if ($this->isRunning()) {
             return ['success' => true, 'output' => 'Apache reiniciado manualmente.'];
         }
 
-        $errorMsg = !empty($startOut) ? implode("\n", $startOut) : 'Falha ao iniciar Apache (sem resposta do binário)';
+        $netStop = new Process(['net', 'stop', $this->apacheService]);
+        $netStop->run();
+        sleep(1);
+
+        $netStart = new Process(['net', 'start', $this->apacheService]);
+        $netStart->run();
+        sleep(2);
+
+        if ($this->isRunning()) {
+            return ['success' => true, 'output' => "Apache reiniciado via servico {$this->apacheService}."];
+        }
+
+        $errorMsg = $start->getOutput() ?: $start->getErrorOutput() ?: 'Falha ao iniciar Apache (sem resposta do binário)';
         return ['success' => false, 'output' => $errorMsg];
     }
 
@@ -146,18 +161,36 @@ class ApacheService
 
     private function tasklist(): array
     {
-        exec('tasklist /NH /FI "IMAGENAME eq httpd.exe" 2>&1', $out, $code);
-        return $code === 0 ? $out : [];
+        $process = new Process(['tasklist', '/NH', '/FI', 'IMAGENAME eq httpd.exe']);
+        $process->run();
+        return $process->isSuccessful() ? array_filter(explode("\n", $process->getOutput())) : [];
     }
 
     public function testConfig(): array
     {
-        $output = [];
-        $returnVar = 0;
-        exec("\"{$this->apacheBin}\" -t 2>&1", $output, $returnVar);
+        $attempts = 3;
+        $delay = 1000000;
+
+        for ($i = 0; $i < $attempts; $i++) {
+            $process = new Process([$this->apacheBin, '-t']);
+            $process->setTimeout(10);
+            $process->run();
+
+            if ($process->isSuccessful()) {
+                return [
+                    'success' => true,
+                    'output' => $process->getOutput() ?: $process->getErrorOutput(),
+                ];
+            }
+
+            if ($i < $attempts - 1) {
+                usleep($delay);
+            }
+        }
+
         return [
-            'success' => $returnVar === 0,
-            'output' => implode("\n", $output),
+            'success' => false,
+            'output' => $process->getOutput() ?: $process->getErrorOutput(),
         ];
     }
 }
