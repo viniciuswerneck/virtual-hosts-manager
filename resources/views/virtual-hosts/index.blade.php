@@ -15,8 +15,8 @@
                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm">
                 <i class="fas fa-plus-circle mr-1"></i> Novo Virtual Host
             </a>
-            <form action="{{ route('virtual-hosts.restart') }}" method="POST" class="inline"
-                  onsubmit="return confirm('Reiniciar o Apache?')">
+            <form action="{{ route('virtual-hosts.restart') }}" method="POST" class="inline restart-form"
+                  onsubmit="return confirm('Reiniciar o Apache agora? A operacao pode levar alguns segundos.')">
                 @csrf
                 <button type="submit"
                    class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm">
@@ -51,10 +51,10 @@
                     <th class="text-left px-4 py-3"><i class="fas fa-server mr-1"></i>Servidor</th>
                     <th class="text-left px-4 py-3"><i class="fas fa-folder mr-1"></i>Diretório Raiz</th>
                     <th class="text-center px-4 py-3"><i class="fas fa-lock mr-1"></i>SSL</th>
+                    <th class="text-center px-4 py-3"><i class="fas fa-certificate mr-1"></i>Cert</th>
                     <th class="text-center px-4 py-3"><i class="fas fa-plug mr-1"></i>Porta</th>
                     <th class="text-center px-4 py-3"><i class="fas fa-check-circle mr-1"></i>No Apache</th>
-                    <th class="text-left px-4 py-3"><i class="fab fa-github mr-1"></i>GitHub</th>
-                    <th class="text-right px-4 py-3"><i class="fas fa-tools mr-1"></i>Ações</th>
+                    <th class="text-center px-4 py-3"><i class="fas fa-tools mr-1"></i>Ações</th>
                 </tr>
             </thead>
             <tbody class="divide-y">
@@ -70,9 +70,20 @@
                         <td class="px-4 py-3 text-gray-600 text-xs">{{ $vhost->document_root }}</td>
                         <td class="px-4 py-3 text-center">
                             @if ($vhost->ssl_enabled)
-                                <span class="text-green-600 font-bold"><i class="fas fa-check-circle"></i> Sim</span>
+                                <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full"><i class="fas fa-lock"></i> HTTPS</span>
                             @else
-                                <span class="text-gray-400"><i class="fas fa-times-circle"></i> Não</span>
+                                <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 text-xs font-medium px-2 py-0.5 rounded-full"><i class="fas fa-globe"></i> HTTP</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3 text-center text-lg">
+                            @if ($vhost->ssl_enabled)
+                                @if ($certStatus[$vhost->server_name] ?? false)
+                                    <span class="text-green-500" title="Certificado existe">✅</span>
+                                @else
+                                    <span class="text-red-500" title="Certificado nao encontrado">❌</span>
+                                @endif
+                            @else
+                                <span class="text-gray-300">—</span>
                             @endif
                         </td>
                         <td class="px-4 py-3 text-center">{{ $vhost->port }}</td>
@@ -83,29 +94,21 @@
                                 <span class="text-red-500"><i class="fas fa-times-circle"></i> Não</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3">
-                            @if ($vhost->github_url)
-                                <a href="{{ $vhost->github_url }}" target="_blank" rel="noopener noreferrer"
-                                   class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                                    <svg class="w-5 h-5 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                                </a>
-                            @endif
-                        </td>
-                        <td class="px-4 py-3 text-right">
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
                             <a href="{{ route('virtual-hosts.show', $vhost) }}"
-                               class="text-gray-600 hover:text-gray-900 text-xs font-medium mr-2"><i class="fas fa-eye"></i> Ver</a>
+                               class="text-gray-600 hover:text-gray-900 text-xs font-medium mr-1"><i class="fas fa-eye"></i></a>
                             <a href="{{ route('virtual-hosts.edit', $vhost) }}"
-                               class="text-indigo-600 hover:text-indigo-900 text-xs font-medium mr-2"><i class="fas fa-edit"></i> Editar</a>
+                               class="text-indigo-600 hover:text-indigo-900 text-xs font-medium mr-1"><i class="fas fa-edit"></i></a>
                             <form action="{{ route('virtual-hosts.regenerate-cert', $vhost) }}" method="POST" class="inline"
-                                  onsubmit="return confirm('Regenerar certificado SSL para {{ $vhost->server_name }}?')">
+                                  onsubmit="return confirm('Regenerar certificado SSL de {{ $vhost->server_name }}?')">
                                 @csrf
-                                <button type="submit" class="text-orange-500 hover:text-orange-700 text-xs font-medium mr-2"><i class="fas fa-certificate"></i> Cert</button>
+                                <button type="submit" class="text-orange-500 hover:text-orange-700 text-xs font-medium mr-1" title="Regenerar certificado"><i class="fas fa-certificate"></i></button>
                             </form>
                             <form action="{{ route('virtual-hosts.destroy', $vhost) }}" method="POST" class="inline"
-                                  onsubmit="return confirm('Excluir {{ $vhost->server_name }}? Isso vai remover o hosts, o certificado SSL e a config do Apache.')">
+                                  onsubmit="return confirm('Excluir {{ $vhost->server_name }}? Isso remove o hosts, certificado SSL e config do Apache.')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900 text-xs font-medium"><i class="fas fa-trash-alt"></i> Excluir</button>
+                                <button type="submit" class="text-red-600 hover:text-red-900 text-xs font-medium" title="Excluir"><i class="fas fa-trash-alt"></i></button>
                             </form>
                         </td>
                     </tr>

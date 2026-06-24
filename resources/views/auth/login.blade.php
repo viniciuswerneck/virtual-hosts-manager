@@ -26,7 +26,8 @@
 
         @if (session('error'))
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm">
-                {{ session('error') }}
+                <p>{{ session('error') }}</p>
+                <p class="mt-2 text-xs opacity-75">Para gerar um hash da senha: <code class="bg-red-200 px-1 rounded">php -r "echo password_hash('sua-senha', PASSWORD_BCRYPT);"</code></p>
             </div>
         @endif
 

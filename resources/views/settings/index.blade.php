@@ -2,6 +2,34 @@
 
 @section('title', 'Configurações')
 
+@php
+    use Illuminate\Support\Facades\File;
+
+    $defaults = [
+        'apache_vhosts_file' => 'C:/Apache24/conf/extra/httpd-vhosts.conf',
+        'apache_bin' => 'C:/Apache24/bin/httpd.exe',
+        'apache_service' => 'Apache2.4',
+        'apache_ssl_port' => '443',
+        'hosts_file' => 'C:/Windows/System32/drivers/etc/hosts',
+        'mkcert_bin' => 'C:/mkcert/mkcert.exe',
+        'mkcert_dir' => 'C:/mkcert',
+        'default_document_root' => 'D:/www/',
+    ];
+
+    $pathChecks = ['apache_vhosts_file', 'apache_bin', 'hosts_file', 'mkcert_bin', 'mkcert_dir', 'default_document_root'];
+    $exists = [];
+    foreach ($pathChecks as $key) {
+        $val = $config[$key] ?? '';
+        if ($key === 'mkcert_dir' || $key === 'default_document_root') {
+            $exists[$key] = File::isDirectory($val);
+        } elseif ($key === 'apache_service') {
+            $exists[$key] = null;
+        } else {
+            $exists[$key] = File::exists($val);
+        }
+    }
+@endphp
+
 @section('content')
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-cogs text-indigo-600 mr-2"></i>Configurações do Sistema</h1>
@@ -14,58 +42,95 @@
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-file-code mr-1 text-gray-500"></i>Arquivo de Configuração do Apache</label>
-                <input type="text" name="apache_vhosts_file" value="{{ old('apache_vhosts_file', $config['apache_vhosts_file']) }}"
-                       class="w-full border rounded px-3 py-2 text-sm font-mono bg-white">
+                <div class="flex gap-1 items-center">
+                    <input type="text" name="apache_vhosts_file" id="apache_vhosts_file" value="{{ old('apache_vhosts_file', $config['apache_vhosts_file']) }}"
+                           class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-white">
+                    <span class="text-lg">{{ $exists['apache_vhosts_file'] ? '✅' : '❌' }}</span>
+                    <button type="button" onclick="restore('apache_vhosts_file', '{{ $defaults['apache_vhosts_file'] }}')" class="text-gray-400 hover:text-gray-600 text-xs" title="Restaurar padrão">↩</button>
+                </div>
                 <p class="text-gray-400 text-xs mt-1">Ex: C:/Apache24/conf/extra/httpd-vhosts.conf</p>
             </div>
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-cogs mr-1 text-gray-500"></i>Binário do Apache (httpd)</label>
-                <input type="text" name="apache_bin" value="{{ old('apache_bin', $config['apache_bin']) }}"
-                       class="w-full border rounded px-3 py-2 text-sm font-mono bg-white">
+                <div class="flex gap-1 items-center">
+                    <input type="text" name="apache_bin" id="apache_bin" value="{{ old('apache_bin', $config['apache_bin']) }}"
+                           class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-white">
+                    <span class="text-lg">{{ $exists['apache_bin'] ? '✅' : '❌' }}</span>
+                    <button type="button" onclick="restore('apache_bin', '{{ $defaults['apache_bin'] }}')" class="text-gray-400 hover:text-gray-600 text-xs" title="Restaurar padrão">↩</button>
+                </div>
                 <p class="text-gray-400 text-xs mt-1">Ex: C:/Apache24/bin/httpd.exe</p>
             </div>
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-server mr-1 text-gray-500"></i>Nome do Serviço Apache</label>
-                <input type="text" name="apache_service" value="{{ old('apache_service', $config['apache_service']) }}"
-                       class="w-full border rounded px-3 py-2 text-sm font-mono bg-white">
+                <div class="flex gap-1 items-center">
+                    <input type="text" name="apache_service" id="apache_service" value="{{ old('apache_service', $config['apache_service']) }}"
+                           class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-white">
+                    <span class="text-gray-300 text-lg" title="Não é um caminho de arquivo">—</span>
+                    <button type="button" onclick="restore('apache_service', '{{ $defaults['apache_service'] }}')" class="text-gray-400 hover:text-gray-600 text-xs" title="Restaurar padrão">↩</button>
+                </div>
                 <p class="text-gray-400 text-xs mt-1">Ex: Apache2.4</p>
             </div>
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-lock mr-1 text-gray-500"></i>Porta SSL do Apache</label>
-                <input type="number" name="apache_ssl_port" value="{{ old('apache_ssl_port', $config['apache_ssl_port']) }}"
-                       class="w-full border rounded px-3 py-2 text-sm font-mono bg-white">
+                <div class="flex gap-1 items-center">
+                    <input type="number" name="apache_ssl_port" id="apache_ssl_port" value="{{ old('apache_ssl_port', $config['apache_ssl_port']) }}"
+                           class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-white">
+                    <span class="text-gray-300 text-lg">—</span>
+                    <button type="button" onclick="restore('apache_ssl_port', '{{ $defaults['apache_ssl_port'] }}')" class="text-gray-400 hover:text-gray-600 text-xs" title="Restaurar padrão">↩</button>
+                </div>
                 <p class="text-gray-400 text-xs mt-1">Porta padrão para VirtualHosts SSL (padrão: 443)</p>
             </div>
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-network-wired mr-1 text-gray-500"></i>Arquivo Hosts do Windows</label>
-                <input type="text" name="hosts_file" value="{{ old('hosts_file', $config['hosts_file']) }}"
-                       class="w-full border rounded px-3 py-2 text-sm font-mono bg-white">
+                <div class="flex gap-1 items-center">
+                    <input type="text" name="hosts_file" id="hosts_file" value="{{ old('hosts_file', $config['hosts_file']) }}"
+                           class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-white">
+                    <span class="text-lg">{{ $exists['hosts_file'] ? '✅' : '❌' }}</span>
+                    <button type="button" onclick="restore('hosts_file', '{{ $defaults['hosts_file'] }}')" class="text-gray-400 hover:text-gray-600 text-xs" title="Restaurar padrão">↩</button>
+                </div>
                 <p class="text-gray-400 text-xs mt-1">Ex: C:/Windows/System32/drivers/etc/hosts</p>
             </div>
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-shield-alt mr-1 text-gray-500"></i>Binário do mkcert</label>
-                <input type="text" name="mkcert_bin" value="{{ old('mkcert_bin', $config['mkcert_bin']) }}"
-                       class="w-full border rounded px-3 py-2 text-sm font-mono bg-white">
+                <div class="flex gap-1 items-center">
+                    <input type="text" name="mkcert_bin" id="mkcert_bin" value="{{ old('mkcert_bin', $config['mkcert_bin']) }}"
+                           class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-white">
+                    <span class="text-lg">{{ $exists['mkcert_bin'] ? '✅' : '❌' }}</span>
+                    <button type="button" onclick="restore('mkcert_bin', '{{ $defaults['mkcert_bin'] }}')" class="text-gray-400 hover:text-gray-600 text-xs" title="Restaurar padrão">↩</button>
+                </div>
                 <p class="text-gray-400 text-xs mt-1">Ex: C:/mkcert/mkcert.exe</p>
             </div>
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-folder-open mr-1 text-gray-500"></i>Diretório de Certificados SSL</label>
-                <input type="text" name="mkcert_dir" value="{{ old('mkcert_dir', $config['mkcert_dir']) }}"
-                       class="w-full border rounded px-3 py-2 text-sm font-mono bg-white">
+                <div class="flex gap-1 items-center">
+                    <input type="text" name="mkcert_dir" id="mkcert_dir" value="{{ old('mkcert_dir', $config['mkcert_dir']) }}"
+                           class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-white">
+                    <span class="text-lg">{{ $exists['mkcert_dir'] ? '✅' : '❌' }}</span>
+                    <button type="button" onclick="restore('mkcert_dir', '{{ $defaults['mkcert_dir'] }}')" class="text-gray-400 hover:text-gray-600 text-xs" title="Restaurar padrão">↩</button>
+                </div>
                 <p class="text-gray-400 text-xs mt-1">Ex: C:/mkcert</p>
             </div>
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-folder mr-1 text-gray-500"></i>Diretório Raiz Padrão</label>
-                <input type="text" name="default_document_root" value="{{ old('default_document_root', $config['default_document_root']) }}"
-                       class="w-full border rounded px-3 py-2 text-sm font-mono bg-white">
+                <div class="flex gap-1 items-center">
+                    <input type="text" name="default_document_root" id="default_document_root" value="{{ old('default_document_root', $config['default_document_root']) }}"
+                           class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-white">
+                    <span class="text-lg">{{ $exists['default_document_root'] ? '✅' : '❌' }}</span>
+                    <button type="button" onclick="restore('default_document_root', '{{ $defaults['default_document_root'] }}')" class="text-gray-400 hover:text-gray-600 text-xs" title="Restaurar padrão">↩</button>
+                </div>
                 <p class="text-gray-400 text-xs mt-1">Usado como valor padrão ao criar novo host. Ex: D:/www/</p>
+            </div>
+
+            <div class="mb-6 p-3 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
+                <p><strong>💡 Certificados SSL:</strong> Se o navegador não confiar nos certificados, execute no PowerShell como Administrador:</p>
+                <code class="block mt-1 bg-blue-100 px-2 py-1 rounded">$env:CAROOT="D:\www\localserver\storage\app\mkcert"; mkcert -install</code>
             </div>
 
             <div class="flex gap-2">
@@ -78,4 +143,10 @@
             </div>
         </form>
     </div>
+
+    <script>
+        function restore(fieldId, defaultValue) {
+            document.getElementById(fieldId).value = defaultValue;
+        }
+    </script>
 @endsection
