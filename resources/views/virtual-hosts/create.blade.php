@@ -25,7 +25,7 @@
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Diretório Raiz</label>
-                <input type="text" name="document_root" value="{{ old('document_root', 'D:/www/') }}"
+                <input type="text" name="document_root" value="{{ old('document_root', config('virtualhosts.default_document_root')) }}"
                        class="w-full border rounded px-3 py-2 text-sm @error('document_root') border-red-500 @enderror"
                        placeholder="D:/www/meusite/public">
                 @error('document_root')

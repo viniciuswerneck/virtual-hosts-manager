@@ -11,7 +11,7 @@ class HostsFileService
 
     public function __construct()
     {
-        $this->hostsFile = 'C:/Windows/System32/drivers/etc/hosts';
+        $this->hostsFile = config('virtualhosts.hosts_file');
     }
 
     public function addEntry(string $serverName): bool

@@ -12,8 +12,8 @@ class ApacheService
 
     public function __construct()
     {
-        $this->vhostsFile = 'C:/Apache24/conf/extra/httpd-vhosts.conf';
-        $this->apacheBin = 'C:/Apache24/bin/httpd.exe';
+        $this->vhostsFile = config('virtualhosts.apache_vhosts_file');
+        $this->apacheBin = config('virtualhosts.apache_bin');
     }
 
     public function getVhostsFile(): string
@@ -92,8 +92,9 @@ class ApacheService
                 $lines[] = '    </Directory>';
                 $lines[] = '';
                 $lines[] = '    SSLEngine on';
-                $lines[] = "    SSLCertificateFile \"C:/mkcert/{$name}.pem\"";
-                $lines[] = "    SSLCertificateKeyFile \"C:/mkcert/{$name}-key.pem\"";
+                $certDir = rtrim(config('virtualhosts.mkcert_dir'), '/');
+                $lines[] = "    SSLCertificateFile \"{$certDir}/{$name}.pem\"";
+                $lines[] = "    SSLCertificateKeyFile \"{$certDir}/{$name}-key.pem\"";
                 $lines[] = '</VirtualHost>';
                 $lines[] = '';
             }
@@ -104,7 +105,7 @@ class ApacheService
         } catch (Throwable $e) {
             throw new \RuntimeException(
                 "Permissão negada ao escrever no Apache config ({$this->vhostsFile}).\n" .
-                "Execute o fix-permissions.bat como Administrador."
+                "Execute o fix-permissions.bat como Administrador para liberar as permissões."
             );
         }
     }
