@@ -15,7 +15,7 @@
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-server mr-1 text-gray-500"></i>Nome do Servidor</label>
                 <input type="text" name="server_name" value="{{ old('server_name', $virtualHost->server_name) }}"
-                       class="w-full border rounded px-3 py-2 text-sm @error('server_name') border-red-500 @enderror"
+                       class="w-full border rounded px-3 py-2 text-sm bg-white @error('server_name') border-red-500 @enderror"
                        placeholder="meusite.local">
                 @error('server_name')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -25,7 +25,7 @@
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-folder mr-1 text-gray-500"></i>Diretório Raiz</label>
                 <input type="text" name="document_root" value="{{ old('document_root', $virtualHost->document_root) }}"
-                       class="w-full border rounded px-3 py-2 text-sm @error('document_root') border-red-500 @enderror">
+                       class="w-full border rounded px-3 py-2 text-sm bg-white @error('document_root') border-red-500 @enderror">
                 @error('document_root')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
@@ -34,7 +34,7 @@
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-plug mr-1 text-gray-500"></i>Porta</label>
                 <input type="number" name="port" value="{{ old('port', $virtualHost->port) }}"
-                       class="w-full border rounded px-3 py-2 text-sm @error('port') border-red-500 @enderror">
+                       class="w-full border rounded px-3 py-2 text-sm bg-white @error('port') border-red-500 @enderror">
                 @error('port')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
@@ -52,7 +52,7 @@
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fab fa-github mr-1 text-gray-500"></i>GitHub</label>
                 <input type="url" name="github_url" value="{{ old('github_url', $virtualHost->github_url) }}"
-                       class="w-full border rounded px-3 py-2 text-sm @error('github_url') border-red-500 @enderror"
+                       class="w-full border rounded px-3 py-2 text-sm bg-white @error('github_url') border-red-500 @enderror"
                        placeholder="https://github.com/usuario/repositorio">
                 @error('github_url')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -61,7 +61,7 @@
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-sticky-note mr-1 text-gray-500"></i>Observações</label>
-                <textarea name="notes" rows="2" class="w-full border rounded px-3 py-2 text-sm">{{ old('notes', $virtualHost->notes) }}</textarea>
+                <textarea name="notes" rows="2" class="w-full border rounded px-3 py-2 text-sm bg-white">{{ old('notes', $virtualHost->notes) }}</textarea>
             </div>
 
             <div class="flex gap-2">

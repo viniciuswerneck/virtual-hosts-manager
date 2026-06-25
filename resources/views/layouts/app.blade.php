@@ -4,8 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Hosts Manager') - Gerenciador de Virtual Hosts</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <script src="https://cdn.tailwindcss.com"></script>
+    @endif
     <script>
         if (localStorage.getItem('theme') === 'dark' ||
             (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -22,6 +26,7 @@
         .dark .text-gray-500 { color: #cbd5e0 !important; }
         .dark .text-gray-400 { color: #a0aec0 !important; }
         .dark .text-gray-700 { color: #e2e8f0 !important; }
+        .dark input.bg-white, .dark textarea.bg-white { background-color: #fff !important; }
         .dark input, .dark textarea { color: #1a202c; }
         .dark input::placeholder, .dark textarea::placeholder { color: #718096; }
         .dark .divide-y > * { border-color: #4a5568 !important; }
@@ -69,6 +74,12 @@
                     <a href="{{ route('virtual-hosts.index') }}" class="hover:text-indigo-200"><i class="fas fa-list mr-1"></i>Listar</a>
                     <a href="{{ route('virtual-hosts.create') }}" class="hover:text-indigo-200"><i class="fas fa-plus-circle mr-1"></i>Novo Host</a>
                     <a href="{{ route('settings.index') }}" class="hover:text-indigo-200"><i class="fas fa-cog mr-1"></i>Config</a>
+                    @if (!empty(config('app.admin_password')))
+                        <form action="{{ route('admin.logout') }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="hover:text-indigo-200" title="Sair"><i class="fas fa-sign-out-alt mr-1"></i>Sair</button>
+                        </form>
+                    @endif
                     <button onclick="toggleTheme()" class="p-1 rounded hover:bg-indigo-600 focus:outline-none" title="Alternar tema">
                         <svg id="sun-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -83,23 +94,20 @@
     </nav>
 
     <main class="max-w-7xl mx-auto px-4 py-6">
-        @if (session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if (session('warning'))
-            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
-                {{ session('warning') }}
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                {{ session('error') }}
-            </div>
-        @endif
+        @php
+            $flashTypes = ['success' => 'green', 'warning' => 'yellow', 'error' => 'red'];
+        @endphp
+        @foreach ($flashTypes as $type => $color)
+            @if (session($type))
+                @php $parts = explode('|', session($type), 2); @endphp
+                <div class="bg-{{ $color }}-100 border border-{{ $color }}-400 text-{{ $color }}-700 px-4 py-3 rounded mb-4">
+                    {{ $parts[0] }}
+                    @if (isset($parts[1]))
+                        <span class="block mt-1 text-xs opacity-75">{{ $parts[1] }}</span>
+                    @endif
+                </div>
+            @endif
+        @endforeach
 
         @yield('content')
     </main>
