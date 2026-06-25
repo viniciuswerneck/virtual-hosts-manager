@@ -4,7 +4,15 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\VirtualHostController;
 use Illuminate\Support\Facades\Route;
 
+Route::post('/admin/logout', function (\Illuminate\Http\Request $request) {
+    $request->session()->forget('admin_authenticated');
+    return redirect()->route('admin.login');
+})->name('admin.logout');
+
 Route::get('/admin/login', function () {
+    if (session('admin_authenticated')) {
+        return redirect()->route('virtual-hosts.index');
+    }
     return view('auth.login');
 })->name('admin.login');
 
@@ -15,20 +23,15 @@ Route::post('/admin/login', function (\Illuminate\Http\Request $request) {
         return redirect()->route('virtual-hosts.index');
     }
 
-    if ($request->input('password') === $password) {
+    if (\Illuminate\Support\Facades\Hash::check($request->input('password'), $password)) {
         $request->session()->put('admin_authenticated', true);
         return redirect()->intended(route('virtual-hosts.index'));
     }
 
     return back()->with('error', 'Senha incorreta.');
-})->name('admin.login.post');
+})->name('admin.login.post')->middleware('throttle:5,1');
 
-Route::post('/admin/logout', function (\Illuminate\Http\Request $request) {
-    $request->session()->forget('admin_authenticated');
-    return redirect()->route('admin.login');
-})->name('admin.logout');
-
-Route::middleware('admin.auth')->group(function () {
+Route::middleware(['admin.auth'])->group(function () {
     Route::get('/', function () {
         return redirect()->route('virtual-hosts.index');
     });

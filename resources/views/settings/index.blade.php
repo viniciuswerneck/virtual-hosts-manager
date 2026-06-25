@@ -34,6 +34,13 @@
             </div>
 
             <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-lock mr-1 text-gray-500"></i>Porta SSL do Apache</label>
+                <input type="number" name="apache_ssl_port" value="{{ old('apache_ssl_port', $config['apache_ssl_port']) }}"
+                       class="w-full border rounded px-3 py-2 text-sm font-mono bg-white">
+                <p class="text-gray-400 text-xs mt-1">Porta padrão para VirtualHosts SSL (padrão: 443)</p>
+            </div>
+
+            <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-network-wired mr-1 text-gray-500"></i>Arquivo Hosts do Windows</label>
                 <input type="text" name="hosts_file" value="{{ old('hosts_file', $config['hosts_file']) }}"
                        class="w-full border rounded px-3 py-2 text-sm font-mono bg-white">

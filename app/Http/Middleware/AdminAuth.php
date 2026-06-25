@@ -20,19 +20,6 @@ class AdminAuth
             return $next($request);
         }
 
-        if ($request->is('admin/login') || $request->is('admin/login/*')) {
-            return $next($request);
-        }
-
-        if ($request->isMethod('POST') && $request->path() === 'admin/login') {
-            if ($request->input('password') === $password) {
-                $request->session()->put('admin_authenticated', true);
-                return redirect()->intended(route('virtual-hosts.index'));
-            }
-
-            return back()->with('error', 'Senha incorreta.');
-        }
-
         return redirect()->route('admin.login');
     }
 }

@@ -15,6 +15,7 @@ class SettingsController extends Controller
             'apache_vhosts_file' => config('virtualhosts.apache_vhosts_file'),
             'apache_bin' => config('virtualhosts.apache_bin'),
             'apache_service' => config('virtualhosts.apache_service'),
+            'apache_ssl_port' => config('virtualhosts.apache_ssl_port'),
             'hosts_file' => config('virtualhosts.hosts_file'),
             'mkcert_bin' => config('virtualhosts.mkcert_bin'),
             'mkcert_dir' => config('virtualhosts.mkcert_dir'),
@@ -33,7 +34,7 @@ class SettingsController extends Controller
     public function update(Request $request)
     {
         $keys = [
-            'apache_vhosts_file', 'apache_bin', 'apache_service',
+            'apache_vhosts_file', 'apache_bin', 'apache_service', 'apache_ssl_port',
             'hosts_file', 'mkcert_bin', 'mkcert_dir', 'default_document_root',
         ];
 

@@ -54,11 +54,10 @@
         .dark .hover\:bg-indigo-700:hover { background-color: #3730a3 !important; }
         .dark .hover\:bg-orange-600:hover { background-color: #c05621 !important; }
         .dark .hover\:bg-gray-600:hover { background-color: #718096 !important; }
-        .dark { color: #e2e8f0; }
+        .dark .dark { color: #e2e8f0; }
         .dark .font-medium, .dark .font-bold { color: #e2e8f0 !important; }
         .dark .shadow { box-shadow: 0 1px 3px 0 rgba(0,0,0,0.3) !important; }
         .dark .text-red-500 { color: #fc8181 !important; }
-        .dark .text-gray-400 { color: #a0aec0 !important; }
         .dark .odd\:bg-white:nth-child(odd) { background-color: #2d3748 !important; }
         .dark .even\:bg-gray-50:nth-child(even) { background-color: #4a5568 !important; }
         .dark table thead tr { background-color: #4a5568 !important; }
@@ -116,7 +115,7 @@
         <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
             <span>Desenvolvido por <a href="https://lab.werneck.dev.br/" class="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium" target="_blank">Werneck Lab</a> &copy; 2024 - {{ date('Y') }}</span>
             <span class="flex items-center gap-2">
-                <i class="fas fa-tag"></i> v{{ env('APP_VERSION', '1.0.0') }}
+                <i class="fas fa-tag"></i> v{{ config('app.version') }}
                 <span class="text-gray-300 dark:text-gray-600">|</span>
                 <i class="fas fa-server"></i> Hosts Manager
             </span>

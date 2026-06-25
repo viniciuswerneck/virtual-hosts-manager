@@ -48,13 +48,21 @@ class VirtualHostController extends Controller
         $data = $request->validated();
         $serverName = $data['server_name'];
 
+        $hostEntryAdded = false;
+        $certGenerated = false;
+
         try {
             $vhost = VirtualHost::create($data);
 
             $hosts->addEntry($serverName);
+            $hostEntryAdded = true;
 
             if (($data['ssl_enabled'] ?? true) && !$mkcert->certExists($serverName)) {
-                $mkcert->generate($serverName);
+                $result = $mkcert->generate($serverName);
+                if (!$result['success']) {
+                    throw new RuntimeException('Erro ao gerar certificado SSL: ' . ($result['output'] ?? 'erro desconhecido'));
+                }
+                $certGenerated = true;
             }
 
             $result = $manager->applyApacheConfig();
@@ -64,6 +72,15 @@ class VirtualHostController extends Controller
         } catch (RuntimeException $e) {
             if (isset($vhost)) {
                 $vhost->delete();
+            }
+            if ($certGenerated) {
+                $mkcert->delete($serverName);
+            }
+            if ($hostEntryAdded) {
+                try {
+                    $hosts->removeEntry($serverName);
+                } catch (\Throwable) {
+                }
             }
             return redirect()->back()
                 ->withInput()
