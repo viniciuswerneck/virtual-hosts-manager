@@ -8,6 +8,7 @@ use App\Services\ApacheService;
 use App\Services\HostsFileService;
 use App\Services\MkcertService;
 use App\Services\VhostManagerService;
+use Illuminate\Support\Facades\File;
 use RuntimeException;
 
 class VirtualHostController extends Controller
@@ -26,7 +27,13 @@ class VirtualHostController extends Controller
         $apacheVhosts = $apache->parseExisting();
         $apacheNames = array_column($apacheVhosts, 'server_name');
 
-        return view('virtual-hosts.index', compact('vhosts', 'apacheNames', 'search'));
+        $certDir = config('virtualhosts.mkcert_dir');
+        $certStatus = [];
+        foreach ($vhosts as $v) {
+            $certStatus[$v->server_name] = File::exists("{$certDir}/{$v->server_name}.pem");
+        }
+
+        return view('virtual-hosts.index', compact('vhosts', 'apacheNames', 'search', 'certStatus'));
     }
 
     public function show(VirtualHost $virtualHost)

@@ -24,12 +24,23 @@
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-folder mr-1 text-gray-500"></i>Diretório Raiz</label>
-                <input type="text" name="document_root" value="{{ old('document_root', $virtualHost->document_root) }}"
-                       class="w-full border rounded px-3 py-2 text-sm bg-white @error('document_root') border-red-500 @enderror">
+                <div class="flex gap-1">
+                    <input type="text" name="document_root" id="document_root" value="{{ old('document_root', $virtualHost->document_root) }}"
+                           class="flex-1 border rounded px-3 py-2 text-sm bg-white @error('document_root') border-red-500 @enderror">
+                    <button type="button" onclick="openExplorer()" class="bg-gray-100 hover:bg-gray-200 border rounded px-3 text-gray-600" title="Abrir no Explorer">
+                        <i class="fas fa-folder-open"></i>
+                    </button>
+                </div>
                 @error('document_root')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
+            <script>
+                function openExplorer() {
+                    var path = document.getElementById('document_root').value.replace(/\//g, '\\');
+                    window.open('file:///' + path, '_blank');
+                }
+            </script>
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-plug mr-1 text-gray-500"></i>Porta</label>

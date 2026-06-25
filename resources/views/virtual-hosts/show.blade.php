@@ -35,7 +35,15 @@
                 </tr>
                 <tr>
                     <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-folder mr-1"></i>Diretório Raiz</th>
-                    <td class="px-4 py-3 text-gray-600">{{ $virtualHost->document_root }}</td>
+                    <td class="px-4 py-3 text-gray-600">
+                        <span>{{ $virtualHost->document_root }}</span>
+                        @if (\Illuminate\Support\Facades\File::exists($virtualHost->document_root))
+                            <a href="file:///{{ str_replace('/', '\\', $virtualHost->document_root) }}" target="_blank"
+                               class="text-indigo-600 hover:text-indigo-900 text-xs ml-2" title="Abrir no Explorer">
+                                <i class="fas fa-external-link-alt"></i> Abrir
+                            </a>
+                        @endif
+                    </td>
                 </tr>
                 <tr>
                     <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-plug mr-1"></i>Porta</th>
@@ -45,9 +53,15 @@
                     <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-lock mr-1"></i>SSL</th>
                     <td class="px-4 py-3">
                         @if ($virtualHost->ssl_enabled)
-                            <span class="text-green-600 font-bold"><i class="fas fa-check-circle"></i> Ativado</span>
+                            <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full"><i class="fas fa-lock"></i> HTTPS</span>
+                            @php $certPath = config('virtualhosts.mkcert_dir') . '/' . $virtualHost->server_name . '.pem'; @endphp
+                            @if (\Illuminate\Support\Facades\File::exists($certPath))
+                                <span class="text-green-600 text-xs ml-2">✅ Certificado presente</span>
+                            @else
+                                <span class="text-red-500 text-xs ml-2">❌ Certificado não encontrado</span>
+                            @endif
                         @else
-                            <span class="text-gray-400"><i class="fas fa-times-circle"></i> Desativado</span>
+                            <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 text-xs font-medium px-2 py-0.5 rounded-full"><i class="fas fa-globe"></i> HTTP</span>
                         @endif
                     </td>
                 </tr>

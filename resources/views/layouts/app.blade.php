@@ -73,6 +73,14 @@
                     <a href="{{ route('virtual-hosts.index') }}" class="hover:text-indigo-200"><i class="fas fa-list mr-1"></i>Listar</a>
                     <a href="{{ route('virtual-hosts.create') }}" class="hover:text-indigo-200"><i class="fas fa-plus-circle mr-1"></i>Novo Host</a>
                     <a href="{{ route('settings.index') }}" class="hover:text-indigo-200"><i class="fas fa-cog mr-1"></i>Config</a>
+                    @php
+                        $apacheOnline = false;
+                        try { $apacheOnline = app(\App\Services\ApacheService::class)->isRunning(); } catch (\Throwable) {}
+                    @endphp
+                    <span class="flex items-center gap-1 text-xs {{ $apacheOnline ? 'text-green-300' : 'text-red-300' }}" title="Apache {{ $apacheOnline ? 'rodando' : 'parado' }}">
+                        <i class="fas {{ $apacheOnline ? 'fa-check-circle' : 'fa-times-circle' }}"></i>
+                        Apache
+                    </span>
                     @if (!empty(config('app.admin_password')))
                         <form action="{{ route('admin.logout') }}" method="POST" class="inline">
                             @csrf
@@ -136,6 +144,16 @@
         }
 
         updateIcons(document.documentElement.classList.contains('dark'));
+
+        document.querySelectorAll('.restart-form').forEach(function (form) {
+            form.addEventListener('submit', function () {
+                var btn = this.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-pulse mr-1"></i> Reiniciando...';
+                }
+            });
+        });
     </script>
 </body>
 </html>
