@@ -16,7 +16,7 @@ class StoreVirtualHostRequest extends FormRequest
     {
         if ($this->has('document_root')) {
             $this->merge([
-                'document_root' => str_replace('\\', '/', $this->input('document_root')),
+                'document_root' => trim(str_replace('\\', '/', $this->input('document_root'))),
             ]);
         }
     }

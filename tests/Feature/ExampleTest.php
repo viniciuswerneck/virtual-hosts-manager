@@ -7,6 +7,12 @@ use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config()->set('app.admin_password', '');
+    }
+
     /**
      * A basic test example.
      */

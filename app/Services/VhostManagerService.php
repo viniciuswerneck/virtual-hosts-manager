@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\VirtualHost;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use RuntimeException;
 
 class VhostManagerService
@@ -16,20 +18,44 @@ class VhostManagerService
     public function applyApacheConfig(): array
     {
         $allVhosts = VirtualHost::all()->toArray();
+        $vhostsFile = $this->apache->getVhostsFile();
+
         $this->apache->writeConfig($allVhosts);
 
-        $test = $this->apache->testConfig();
+        try {
+            $test = $this->apache->testConfig();
+        } catch (\Throwable) {
+            $service = config('virtualhosts.apache_service');
+            return [
+                'type' => 'warning',
+                'message' => "Configuração do Apache aplicada, mas o teste de sintaxe excedeu o tempo limite. O Apache pode precisar ser reiniciado manualmente: net stop {$service} && net start {$service}",
+            ];
+        }
 
         if (!$test['success']) {
             $errOutput = $test['output'];
             $isSslError = str_contains($errOutput, 'AH00141') || str_contains($errOutput, 'random number generator');
 
             if (!$isSslError) {
-                throw new RuntimeException('Erro na configuração do Apache: ' . $errOutput);
+                return [
+                    'type' => 'warning',
+                    'message' => 'A configuração foi salva, mas o Apache reportou um erro de sintaxe: ' . $errOutput,
+                ];
             }
         }
 
-        $restart = $this->apache->restart();
+        Cache::forget('apache_running');
+
+        try {
+            $restart = $this->apache->restart();
+        } catch (\Throwable) {
+            $service = config('virtualhosts.apache_service');
+            return [
+                'type' => 'warning',
+                'message' => "Configuração aplicada, mas o Apache não pôde ser reiniciado (tempo excedido). Execute manualmente como Administrador: net stop {$service} && net start {$service}",
+            ];
+        }
+
         if ($restart['success']) {
             return ['type' => 'success', 'message' => 'Apache reiniciado automaticamente.'];
         }

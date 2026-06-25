@@ -14,16 +14,17 @@ class HostsFileService
         $this->hostsFile = config('virtualhosts.hosts_file');
     }
 
-    public function addEntry(string $serverName): bool
+    public function addEntry(string $serverName, string $ip = '127.0.0.1'): bool
     {
         try {
             $content = File::get($this->hostsFile);
+            $pattern = '/\b' . preg_quote($serverName, '/') . '\b/';
 
-            if (str_contains($content, $serverName)) {
+            if (preg_match($pattern, $content)) {
                 return true;
             }
 
-            $content = rtrim($content) . "\n127.0.0.1       {$serverName}\n";
+            $content = rtrim($content) . "\n{$ip}       {$serverName}\n";
             File::put($this->hostsFile, $content);
             return true;
         } catch (Throwable $e) {
@@ -43,7 +44,8 @@ class HostsFileService
         try {
             $content = File::get($this->hostsFile);
             $lines = explode("\n", $content);
-            $lines = array_filter($lines, fn($line) => !str_contains($line, $serverName));
+            $pattern = '/\b' . preg_quote($serverName, '/') . '\b/';
+            $lines = array_filter($lines, fn($line) => !preg_match($pattern, $line));
             File::put($this->hostsFile, implode("\n", $lines));
             return true;
         } catch (Throwable $e) {
@@ -57,6 +59,7 @@ class HostsFileService
     public function entryExists(string $serverName): bool
     {
         $content = File::get($this->hostsFile);
-        return str_contains($content, $serverName);
+        $pattern = '/\b' . preg_quote($serverName, '/') . '\b/';
+        return (bool) preg_match($pattern, $content);
     }
 }

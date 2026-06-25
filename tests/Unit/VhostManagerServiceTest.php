@@ -8,6 +8,7 @@ use App\Services\HostsFileService;
 use App\Services\MkcertService;
 use App\Services\VhostManagerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 class VhostManagerServiceTest extends TestCase
@@ -29,6 +30,7 @@ class VhostManagerServiceTest extends TestCase
         VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test']);
 
         $this->mock(ApacheService::class, function ($mock) {
+            $mock->shouldReceive('getVhostsFile')->once()->andReturn('C:/Apache24/conf/extra/httpd-vhosts.conf');
             $mock->shouldReceive('writeConfig')->once();
             $mock->shouldReceive('testConfig')->once()->andReturn(['success' => true, 'output' => '']);
             $mock->shouldReceive('restart')->once()->andReturn(['success' => true, 'output' => 'OK']);
@@ -45,6 +47,7 @@ class VhostManagerServiceTest extends TestCase
         VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test']);
 
         $this->mock(ApacheService::class, function ($mock) {
+            $mock->shouldReceive('getVhostsFile')->once()->andReturn('C:/Apache24/conf/extra/httpd-vhosts.conf');
             $mock->shouldReceive('writeConfig')->once();
             $mock->shouldReceive('testConfig')->once()->andReturn(['success' => true, 'output' => '']);
             $mock->shouldReceive('restart')->once()->andReturn(['success' => false, 'output' => 'Acesso negado']);
@@ -57,21 +60,22 @@ class VhostManagerServiceTest extends TestCase
         $this->assertStringContainsString('reiniciado manualmente', $result['message']);
     }
 
-    public function test_apply_apache_config_throws_on_config_error()
+    public function test_apply_apache_config_returns_warning_on_config_error()
     {
         VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test']);
 
         $this->mock(ApacheService::class, function ($mock) {
+            $mock->shouldReceive('getVhostsFile')->once()->andReturn('C:/Apache24/conf/extra/httpd-vhosts.conf');
             $mock->shouldReceive('writeConfig')->once();
             $mock->shouldReceive('testConfig')->once()->andReturn(['success' => false, 'output' => 'Syntax error']);
             $mock->shouldReceive('restart')->never();
         });
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Syntax error');
-
         $service = app(VhostManagerService::class);
-        $service->applyApacheConfig();
+        $result = $service->applyApacheConfig();
+
+        $this->assertEquals('warning', $result['type']);
+        $this->assertStringContainsString('Syntax error', $result['message']);
     }
 
     public function test_apply_apache_config_does_not_throw_on_ssl_error()
@@ -79,6 +83,7 @@ class VhostManagerServiceTest extends TestCase
         VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test']);
 
         $this->mock(ApacheService::class, function ($mock) {
+            $mock->shouldReceive('getVhostsFile')->once()->andReturn('C:/Apache24/conf/extra/httpd-vhosts.conf');
             $mock->shouldReceive('writeConfig')->once();
             $mock->shouldReceive('testConfig')->once()->andReturn(['success' => false, 'output' => 'AH00141']);
             $mock->shouldReceive('restart')->once()->andReturn(['success' => true, 'output' => 'OK']);

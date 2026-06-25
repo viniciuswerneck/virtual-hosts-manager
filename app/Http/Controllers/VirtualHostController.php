@@ -8,6 +8,9 @@ use App\Services\ApacheService;
 use App\Services\HostsFileService;
 use App\Services\MkcertService;
 use App\Services\VhostManagerService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use RuntimeException;
 
@@ -76,7 +79,7 @@ class VirtualHostController extends Controller
 
             return redirect()->route('virtual-hosts.index')
                 ->with($result['type'], "Virtual host {$serverName} criado com sucesso!|{$result['message']}");
-        } catch (RuntimeException $e) {
+        } catch (\Throwable $e) {
             if (isset($vhost)) {
                 $vhost->delete();
             }
@@ -132,7 +135,7 @@ class VirtualHostController extends Controller
 
             return redirect()->route('virtual-hosts.index')
                 ->with($result['type'], "Virtual host {$newName} atualizado com sucesso!|{$result['message']}");
-        } catch (RuntimeException $e) {
+        } catch (\Throwable $e) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', $e->getMessage());
@@ -157,9 +160,57 @@ class VirtualHostController extends Controller
 
             return redirect()->route('virtual-hosts.index')
                 ->with($result['type'], "Virtual host {$name} excluído com sucesso!|{$result['message']}");
-        } catch (RuntimeException $e) {
+        } catch (\Throwable $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
+    }
+
+    public function exportJson()
+    {
+        $vhosts = VirtualHost::orderBy('server_name')->get(['server_name', 'document_root', 'ssl_enabled', 'port', 'notes', 'github_url']);
+        return response()->streamDownload(function () use ($vhosts) {
+            echo $vhosts->toJson(JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        }, 'virtual-hosts-backup-' . date('Y-m-d-His') . '.json', ['Content-Type' => 'application/json']);
+    }
+
+    public function importJson(Request $request, VhostManagerService $manager)
+    {
+        $request->validate(['backup_file' => 'required|file|mimes:json,txt|max:2048']);
+
+        $content = File::get($request->file('backup_file'));
+        $data = json_decode($content, true);
+
+        if (!is_array($data) || empty($data)) {
+            return redirect()->back()->with('error', 'Arquivo JSON inválido ou vazio.');
+        }
+
+        $imported = 0;
+        foreach ($data as $item) {
+            if (empty($item['server_name'])) continue;
+
+            try {
+                VirtualHost::firstOrCreate(
+                    ['server_name' => $item['server_name']],
+                    [
+                        'document_root' => $item['document_root'] ?? config('virtualhosts.default_document_root'),
+                        'ssl_enabled' => $item['ssl_enabled'] ?? true,
+                        'port' => $item['port'] ?? 80,
+                        'notes' => $item['notes'] ?? null,
+                        'github_url' => $item['github_url'] ?? null,
+                    ]
+                );
+                $imported++;
+            } catch (\Throwable) {
+            }
+        }
+
+        try {
+            $manager->applyApacheConfig();
+        } catch (\Throwable) {
+        }
+
+        return redirect()->route('virtual-hosts.index')
+            ->with('success', "{$imported} virtual hosts importados com sucesso!");
     }
 
     public function sync(VhostManagerService $manager)
@@ -174,6 +225,8 @@ class VirtualHostController extends Controller
     {
         $service = config('virtualhosts.apache_service');
         $result = $apache->restart();
+
+        Cache::forget('apache_running');
 
         if ($result['success']) {
             return redirect()->route('virtual-hosts.index')

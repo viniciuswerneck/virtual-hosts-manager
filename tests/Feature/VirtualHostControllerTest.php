@@ -82,6 +82,7 @@ class VirtualHostControllerTest extends TestCase
         });
 
         $this->mock(ApacheService::class, function ($mock) {
+            $mock->shouldReceive('getVhostsFile')->once()->andReturn('C:/Apache24/conf/extra/httpd-vhosts.conf');
             $mock->shouldReceive('writeConfig')->once();
             $mock->shouldReceive('testConfig')->once()->andReturn(['success' => true, 'output' => '']);
             $mock->shouldReceive('restart')->once()->andReturn(['success' => true, 'output' => '']);
@@ -111,6 +112,7 @@ class VirtualHostControllerTest extends TestCase
         });
 
         $this->mock(ApacheService::class, function ($mock) {
+            $mock->shouldReceive('getVhostsFile')->once()->andReturn('C:/Apache24/conf/extra/httpd-vhosts.conf');
             $mock->shouldReceive('writeConfig')->once();
             $mock->shouldReceive('testConfig')->once()->andReturn(['success' => true, 'output' => '']);
             $mock->shouldReceive('restart')->once()->andReturn(['success' => true, 'output' => '']);

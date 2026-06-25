@@ -98,8 +98,9 @@ class ApacheService
                 $lines[] = '';
                 $lines[] = '    SSLEngine on';
                 $certDir = rtrim(config('virtualhosts.mkcert_dir'), '/');
-                $lines[] = "    SSLCertificateFile \"{$certDir}/{$name}.pem\"";
-                $lines[] = "    SSLCertificateKeyFile \"{$certDir}/{$name}-key.pem\"";
+                $safeName = str_replace(['/', '\\', '..'], '', $name);
+                $lines[] = "    SSLCertificateFile \"{$certDir}/{$safeName}.pem\"";
+                $lines[] = "    SSLCertificateKeyFile \"{$certDir}/{$safeName}-key.pem\"";
                 $lines[] = '</VirtualHost>';
                 $lines[] = '';
             }
@@ -201,12 +202,12 @@ class ApacheService
 
     public function testConfig(): array
     {
-        $attempts = 3;
-        $delay = 1000000;
+        $attempts = 2;
+        $delay = 500000;
 
         for ($i = 0; $i < $attempts; $i++) {
             $process = new Process([$this->apacheBin, '-t']);
-            $process->setTimeout(10);
+            $process->setTimeout(5);
             $process->run();
 
             if ($process->isSuccessful()) {
