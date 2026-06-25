@@ -31,12 +31,18 @@
                            class="text-indigo-600 hover:text-indigo-900 hover:underline">
                             {{ $virtualHost->server_name }}
                         </a>
+                        <button type="button" onclick="copyToClipboard('{{ $virtualHost->server_name }}')" class="text-gray-400 hover:text-gray-600 ml-1" title="Copiar server_name">
+                            <i class="fas fa-copy"></i>
+                        </button>
                     </td>
                 </tr>
                 <tr>
                     <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-folder mr-1"></i>Diretório Raiz</th>
                     <td class="px-4 py-3 text-gray-600">
                         <span>{{ $virtualHost->document_root }}</span>
+                        <button type="button" onclick="copyToClipboard('{{ addslashes($virtualHost->document_root) }}')" class="text-gray-400 hover:text-gray-600 ml-1" title="Copiar document_root">
+                            <i class="fas fa-copy"></i>
+                        </button>
                         @if (\Illuminate\Support\Facades\File::exists($virtualHost->document_root))
                             <a href="file:///{{ str_replace('/', '\\', $virtualHost->document_root) }}" target="_blank"
                                class="text-indigo-600 hover:text-indigo-900 text-xs ml-2" title="Abrir no Explorer">

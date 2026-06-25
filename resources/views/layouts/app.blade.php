@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Hosts Manager') - Gerenciador de Virtual Hosts</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -62,6 +64,17 @@
         .dark .even\:bg-gray-50:nth-child(even) { background-color: #4a5568 !important; }
         .dark table thead tr { background-color: #4a5568 !important; }
         .dark table thead th { color: #e2e8f0 !important; }
+        .toast-enter { animation: slideIn 0.3s ease-out; }
+        .toast-leave { animation: fadeOut 0.3s ease-in forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateX(100%); } }
+        input:not([type="checkbox"]):not([type="radio"]):focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -103,15 +116,22 @@
     <main class="max-w-7xl mx-auto px-4 py-6">
         @php
             $flashTypes = ['success' => 'green', 'warning' => 'yellow', 'error' => 'red'];
+            $icons = ['success' => 'check-circle', 'warning' => 'exclamation-triangle', 'error' => 'times-circle'];
         @endphp
         @foreach ($flashTypes as $type => $color)
             @if (session($type))
                 @php $parts = explode('|', session($type), 2); @endphp
-                <div class="bg-{{ $color }}-100 border border-{{ $color }}-400 text-{{ $color }}-700 px-4 py-3 rounded mb-4">
-                    {{ $parts[0] }}
-                    @if (isset($parts[1]))
-                        <span class="block mt-1 text-xs opacity-75">{{ $parts[1] }}</span>
-                    @endif
+                <div class="toast-enter flex items-start gap-3 bg-{{ $color }}-100 border border-{{ $color }}-400 text-{{ $color }}-700 px-4 py-3 rounded mb-4 shadow-sm" role="alert">
+                    <i class="fas fa-{{ $icons[$type] }} mt-0.5"></i>
+                    <div class="flex-1">
+                        {{ $parts[0] }}
+                        @if (isset($parts[1]))
+                            <span class="block mt-1 text-xs opacity-75">{{ $parts[1] }}</span>
+                        @endif
+                    </div>
+                    <button type="button" onclick="this.parentElement.remove()" class="text-{{ $color }}-700 opacity-50 hover:opacity-100" aria-label="Fechar">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             @endif
         @endforeach
@@ -144,6 +164,33 @@
         }
 
         updateIcons(document.documentElement.classList.contains('dark'));
+
+        document.querySelectorAll('[role="alert"]').forEach(function (el) {
+            setTimeout(function () {
+                el.classList.remove('toast-enter');
+                el.classList.add('toast-leave');
+                setTimeout(function () { el.remove(); }, 300);
+            }, 5000);
+        });
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).catch(function () { fallbackCopy(text); });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(ta);
+        }
 
         document.querySelectorAll('.restart-form').forEach(function (form) {
             form.addEventListener('submit', function () {

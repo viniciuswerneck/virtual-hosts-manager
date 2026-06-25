@@ -27,10 +27,10 @@
     </div>
 
     <div class="mb-4">
-        <form method="GET" action="{{ route('virtual-hosts.index') }}" class="flex gap-2">
+        <form method="GET" action="{{ route('virtual-hosts.index') }}" class="flex gap-2" id="search-form">
             <div class="relative flex-1 max-w-md">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Buscar por nome, diretório ou observações..."
+                <input type="text" name="search" id="search-input" value="{{ $search ?? '' }}" placeholder="Buscar por nome, diretório ou observações..."
                        class="w-full border rounded pl-8 pr-3 py-2 text-sm bg-white">
             </div>
             <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm">
@@ -43,6 +43,23 @@
             @endif
         </form>
     </div>
+    <script>
+        (function () {
+            var input = document.getElementById('search-input');
+            var form = document.getElementById('search-form');
+            var timer;
+            if (input && form) {
+                input.addEventListener('input', function () {
+                    clearTimeout(timer);
+                    timer = setTimeout(function () {
+                        if (input.value.length >= 2 || input.value === '') {
+                            form.submit();
+                        }
+                    }, 400);
+                });
+            }
+        })();
+    </script>
 
     <div class="bg-white rounded shadow overflow-hidden">
         <table class="w-full text-sm">
@@ -66,8 +83,16 @@
                                class="text-indigo-600 hover:text-indigo-900 hover:underline">
                                 {{ $vhost->server_name }}
                             </a>
+                            <button type="button" onclick="copyToClipboard('{{ $vhost->server_name }}')" class="text-gray-400 hover:text-gray-600 ml-1" title="Copiar server_name">
+                                <i class="fas fa-copy text-xs"></i>
+                            </button>
                         </td>
-                        <td class="px-4 py-3 text-gray-600 text-xs">{{ $vhost->document_root }}</td>
+                        <td class="px-4 py-3 text-gray-600 text-xs">
+                            {{ $vhost->document_root }}
+                            <button type="button" onclick="copyToClipboard('{{ addslashes($vhost->document_root) }}')" class="text-gray-400 hover:text-gray-600 ml-1" title="Copiar document_root">
+                                <i class="fas fa-copy text-xs"></i>
+                            </button>
+                        </td>
                         <td class="px-4 py-3 text-center">
                             @if ($vhost->ssl_enabled)
                                 <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full"><i class="fas fa-lock"></i> HTTPS</span>
@@ -114,9 +139,10 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-gray-500">
-                            Nenhum virtual host cadastrado ainda.
-                            <a href="{{ route('virtual-hosts.create') }}" class="text-indigo-600 hover:underline"><i class="fas fa-plus-circle"></i> Criar o primeiro</a>
+                        <td colspan="7" class="px-4 py-12 text-center text-gray-500">
+                            <i class="fas fa-globe text-4xl text-gray-300 mb-3 block"></i>
+                            <p class="mb-2">Nenhum virtual host cadastrado ainda.</p>
+                            <a href="{{ route('virtual-hosts.create') }}" class="text-indigo-600 hover:underline font-medium"><i class="fas fa-plus-circle"></i> Criar o primeiro</a>
                         </td>
                     </tr>
                 @endforelse

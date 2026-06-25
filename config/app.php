@@ -118,6 +118,8 @@ return [
     |
     */
 
+    'admin_password' => env('ADMIN_PASSWORD'),
+
     'version' => env('APP_VERSION', '1.0.0'),
 
     'maintenance' => [
