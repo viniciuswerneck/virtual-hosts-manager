@@ -1,58 +1,196 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🖥️ Hosts Manager - Gerenciador de Virtual Hosts
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplicação web em Laravel 13 para gerenciar **Virtual Hosts Apache**, arquivo **hosts do Windows** e certificados **SSL locais (mkcert)** — tudo por uma interface gráfica no navegador.
 
-## About Laravel
+> Desenvolvido para desenvolvedores PHP/web no Windows que utilizam Apache e precisam criar/gerenciar múltiplos domínios locais com HTTPS de forma rápida e prática.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ✨ Funcionalidades
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **CRUD de Virtual Hosts** — Crie, edite, visualize e exclua virtual hosts com domínio, pasta raiz, porta, SSL, observações e link do GitHub.
+- **Gerenciamento automático do arquivo hosts** — Adiciona/remove entradas `127.0.0.1 <dominio>` no `C:\Windows\System32\drivers\etc\hosts`.
+- **Certificados SSL automáticos** — Gera certificados TLS confiáveis localmente via [mkcert](https://github.com/FiloSottile/mkcert) para cada vhost com SSL habilitado.
+- **Configuração Apache automática** — Escreve blocos `<VirtualHost>` corretos para as portas 80 e 443 com diretivas SSL.
+- **Reinicialização do Apache** — Restarta o serviço Apache após alterações, com fallback para force-kill se necessário.
+- **Validação de sintaxe** — Executa `httpd -t` antes de reiniciar para evitar erros de sintaxe.
+- **Sincronização do Apache** — Importa virtual hosts já existentes no Apache para o banco de dados.
+- **Regeneração de SSL** — Regere o certificado SSL de um vhost com um clique.
+- **Configuração por interface web** — Altere todos os caminhos do sistema (Apache, hosts, mkcert) em tempo de execução pela página de Configurações.
+- **Modo escuro** — Tema dark/light com persistência em localStorage e detecção automática da preferência do sistema.
+- **Interface responsiva** — Tailwind CSS + Font Awesome, totalmente em português brasileiro.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 📋 Requisitos
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Requisito | Versão |
+|---|---|
+| PHP | ^8.3 |
+| Laravel | ^13.8 |
+| Composer | 2.x |
+| Node.js / npm | 20.x+ |
+| Apache HTTP Server | 2.4.x (ex: `C:\Apache24`) |
+| [mkcert](https://github.com/FiloSottile/mkcert) | Última versão |
+| Windows | 10 ou 11 |
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Extensões PHP necessárias
+`openssl`, `PDO`, `sqlite3`, `mbstring`, `tokenizer`, `xml`, `ctype`, `json`, `fileinfo`
 
-## Agentic Development
+### Caminhos padrão do sistema
+- `C:/Apache24/bin/httpd.exe` — Binário do Apache
+- `C:/Apache24/conf/extra/httpd-vhosts.conf` — Configuração de virtual hosts
+- `C:/mkcert/mkcert.exe` — Binário do mkcert
+- `C:/mkcert/` — Diretório de certificados
+- `C:/Windows/System32/drivers/etc/hosts` — Arquivo hosts do Windows
+- `D:/www/` — Pasta raiz padrão para novos projetos
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+> 💡 Todos os caminhos são configuráveis via `.env` ou pela interface web de Configurações.
+
+---
+
+## 🚀 Instalação
+
+### 1. Clone o repositório
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/seu-usuario/hosts-manager.git D:\www\localserver
+cd D:\www\localserver
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Instale as dependências PHP
 
-## Contributing
+```bash
+composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Configure o ambiente
 
-## Code of Conduct
+```bash
+copy .env.example .env
+php artisan key:generate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Edite o arquivo `.env` e ajuste as variáveis conforme seu ambiente, especialmente os caminhos do Apache, mkcert e hosts.
 
-## Security Vulnerabilities
+### 4. Execute as migrations
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan migrate
+```
 
-## License
+### 5. Instale e compile os assets frontend
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+npm install --ignore-scripts
+npm run build
+```
+
+### 6. Configure as permissões (Windows)
+
+Execute o **PowerShell ou Prompt como Administrador**:
+
+```batch
+fix-permissions.bat
+```
+
+Este script concede permissões de escrita no arquivo hosts, no arquivo de configuração do Apache e no diretório de certificados do mkcert.
+
+### Setup rápido (tudo em um comando)
+
+```bash
+composer run setup
+```
+
+---
+
+## ▶️ Executando
+
+### Produção
+
+```bash
+php artisan serve
+```
+
+Acesse: [http://localhost:8000](http://localhost:8000)
+
+### Desenvolvimento (com hot-reload)
+
+```bash
+composer run dev
+```
+
+Executa simultaneamente: servidor Laravel + queue worker + logs + Vite dev.
+
+---
+
+## 🔧 Scripts Úteis
+
+### Composer
+
+| Comando | Descrição |
+|---|---|
+| `composer run setup` | Instala dependências, cria `.env`, gera key, executa migrations, instala npm e compila assets |
+| `composer run dev` | Inicia servidor de desenvolvimento com hot-reload |
+| `composer run test` | Executa `php artisan config:clear` + `php artisan test` |
+
+### Batch (Windows)
+
+| Script | Descrição | Requer Admin? |
+|---|---|---|
+| `fix-permissions.bat` | Concede permissões de escrita nos arquivos do sistema | ✅ Sim |
+| `apply-changes.bat` | Para e inicia o serviço Apache2.4 | ✅ Sim |
+
+### Artisan
+
+| Comando | Descrição |
+|---|---|
+| `php artisan serve` | Inicia o servidor web embutido do PHP |
+| `php artisan migrate` | Executa as migrations do banco de dados |
+| `php artisan config:clear` | Limpa o cache de configuração |
+| `php artisan test` | Executa os testes automatizados |
+
+---
+
+## ⚙️ Configuração
+
+### Variáveis de ambiente (`.env`)
+
+| Variável | Padrão | Descrição |
+|---|---|---|
+| `APACHE_VHOSTS_FILE` | `C:/Apache24/conf/extra/httpd-vhosts.conf` | Caminho do arquivo de configuração de vhosts |
+| `APACHE_BIN` | `C:/Apache24/bin/httpd.exe` | Caminho do binário do Apache |
+| `APACHE_SERVICE` | `Apache2.4` | Nome do serviço do Windows |
+| `HOSTS_FILE` | `C:/Windows/System32/drivers/etc/hosts` | Caminho do arquivo hosts |
+| `MKCERT_BIN` | `C:/mkcert/mkcert.exe` | Caminho do binário do mkcert |
+| `MKCERT_DIR` | `C:/mkcert` | Diretório de certificados SSL |
+| `DEFAULT_DOCUMENT_ROOT` | `D:/www/` | Pasta raiz padrão para novos vhosts |
+
+### Configuração em tempo de execução
+
+Acesse a página **Configurações** no menu superior da aplicação para alterar todos os caminhos acima sem precisar editar o `.env`. As alterações são salvas no banco de dados e aplicadas imediatamente.
+
+---
+
+## 🗄️ Estrutura do Banco de Dados
+
+O projeto utiliza **SQLite** (padrão) com as seguintes tabelas personalizadas:
+
+- **`virtual_hosts`** — `id`, `server_name` (único), `document_root`, `ssl_enabled`, `port`, `notes`, `github_url`
+- **`settings`** — `id`, `key` (único), `value`
+
+---
+
+## 🧪 Testes
+
+```bash
+composer run test
+```
+
+Os testes utilizam SQLite in-memory e estão em `tests/Unit/` e `tests/Feature/`.
+
+---
+
+## 📄 Licença
+
+Este projeto é open-source. Desenvolvido por [Werneck Lab](https://lab.werneck.dev.br/) &copy; 2024-{{ date('Y') }}.
