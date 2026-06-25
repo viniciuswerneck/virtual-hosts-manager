@@ -5,17 +5,17 @@
 @section('content')
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">{{ $virtualHost->server_name }}</h1>
-            <p class="text-gray-500 text-sm mt-1">Detalhes do virtual host</p>
+            <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-server text-indigo-600 mr-2"></i>{{ $virtualHost->server_name }}</h1>
+            <p class="text-gray-500 text-sm mt-1"><i class="fas fa-info-circle mr-1"></i>Detalhes do virtual host</p>
         </div>
         <div class="flex gap-2">
             <a href="{{ route('virtual-hosts.edit', $virtualHost) }}"
                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm">
-                Editar
+                <i class="fas fa-edit mr-1"></i> Editar
             </a>
             <a href="{{ route('virtual-hosts.index') }}"
                class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm">
-                Voltar
+                <i class="fas fa-arrow-left mr-1"></i> Voltar
             </a>
         </div>
     </div>
@@ -24,7 +24,7 @@
         <table class="w-full text-sm">
             <tbody class="divide-y">
                 <tr>
-                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600 w-1/3">Servidor</th>
+                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600 w-1/3"><i class="fas fa-server mr-1"></i>Servidor</th>
                     <td class="px-4 py-3">
                         <a href="{{ $virtualHost->ssl_enabled ? 'https' : 'http' }}://{{ $virtualHost->server_name }}"
                            target="_blank" rel="noopener noreferrer"
@@ -34,26 +34,26 @@
                     </td>
                 </tr>
                 <tr>
-                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600">Diretório Raiz</th>
+                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-folder mr-1"></i>Diretório Raiz</th>
                     <td class="px-4 py-3 text-gray-600">{{ $virtualHost->document_root }}</td>
                 </tr>
                 <tr>
-                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600">Porta</th>
+                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-plug mr-1"></i>Porta</th>
                     <td class="px-4 py-3">{{ $virtualHost->port }}</td>
                 </tr>
                 <tr>
-                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600">SSL</th>
+                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-lock mr-1"></i>SSL</th>
                     <td class="px-4 py-3">
                         @if ($virtualHost->ssl_enabled)
-                            <span class="text-green-600 font-bold">Ativado</span>
+                            <span class="text-green-600 font-bold"><i class="fas fa-check-circle"></i> Ativado</span>
                         @else
-                            <span class="text-gray-400">Desativado</span>
+                            <span class="text-gray-400"><i class="fas fa-times-circle"></i> Desativado</span>
                         @endif
                     </td>
                 </tr>
                 @if ($virtualHost->github_url)
                 <tr>
-                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600">GitHub</th>
+                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fab fa-github mr-1"></i>GitHub</th>
                     <td class="px-4 py-3">
                         <a href="{{ $virtualHost->github_url }}" target="_blank" rel="noopener noreferrer"
                            class="text-indigo-600 hover:text-indigo-900 hover:underline flex items-center gap-1">
@@ -65,16 +65,16 @@
                 @endif
                 @if ($virtualHost->notes)
                 <tr>
-                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600">Observações</th>
+                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-sticky-note mr-1"></i>Observações</th>
                     <td class="px-4 py-3 text-gray-600 whitespace-pre-wrap">{{ $virtualHost->notes }}</td>
                 </tr>
                 @endif
                 <tr>
-                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600">Criado em</th>
+                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-calendar-plus mr-1"></i>Criado em</th>
                     <td class="px-4 py-3 text-gray-600">{{ $virtualHost->created_at->format('d/m/Y H:i:s') }}</td>
                 </tr>
                 <tr>
-                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600">Atualizado em</th>
+                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-calendar-check mr-1"></i>Atualizado em</th>
                     <td class="px-4 py-3 text-gray-600">{{ $virtualHost->updated_at->format('d/m/Y H:i:s') }}</td>
                 </tr>
             </tbody>
@@ -86,7 +86,7 @@
               onsubmit="return confirm('Regenerar certificado SSL para {{ $virtualHost->server_name }}?')">
             @csrf
             <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm">
-                Regenerar Certificado
+                <i class="fas fa-certificate mr-1"></i> Regenerar Certificado
             </button>
         </form>
         <form action="{{ route('virtual-hosts.destroy', $virtualHost) }}" method="POST" class="inline"
@@ -94,7 +94,7 @@
             @csrf
             @method('DELETE')
             <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
-                Excluir
+                <i class="fas fa-trash-alt mr-1"></i> Excluir
             </button>
         </form>
     </div>

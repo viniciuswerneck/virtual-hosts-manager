@@ -4,23 +4,23 @@
 
 @section('content')
     <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Virtual Hosts</h1>
+        <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-globe mr-2 text-indigo-600"></i>Virtual Hosts</h1>
         <div class="flex gap-2">
             <a href="{{ route('virtual-hosts.sync') }}"
                class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm"
                onclick="return confirm('Importar todos os hosts do Apache para o banco?')">
-                Sincronizar do Apache
+                <i class="fas fa-sync-alt mr-1"></i> Sincronizar do Apache
             </a>
             <a href="{{ route('virtual-hosts.create') }}"
                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm">
-                + Novo Virtual Host
+                <i class="fas fa-plus-circle mr-1"></i> Novo Virtual Host
             </a>
             <form action="{{ route('virtual-hosts.restart') }}" method="POST" class="inline"
                   onsubmit="return confirm('Reiniciar o Apache?')">
                 @csrf
                 <button type="submit"
                    class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm">
-                    Reiniciar Apache
+                    <i class="fas fa-redo-alt mr-1"></i> Reiniciar Apache
                 </button>
             </form>
         </div>
@@ -30,13 +30,13 @@
         <table class="w-full text-sm">
             <thead>
                 <tr class="bg-gray-50 text-gray-600 uppercase text-xs">
-                    <th class="text-left px-4 py-3">Servidor</th>
-                    <th class="text-left px-4 py-3">Diretório Raiz</th>
-                    <th class="text-center px-4 py-3">SSL</th>
-                    <th class="text-center px-4 py-3">Porta</th>
-                    <th class="text-center px-4 py-3">No Apache</th>
-                    <th class="text-left px-4 py-3">GitHub</th>
-                    <th class="text-right px-4 py-3">Ações</th>
+                    <th class="text-left px-4 py-3"><i class="fas fa-server mr-1"></i>Servidor</th>
+                    <th class="text-left px-4 py-3"><i class="fas fa-folder mr-1"></i>Diretório Raiz</th>
+                    <th class="text-center px-4 py-3"><i class="fas fa-lock mr-1"></i>SSL</th>
+                    <th class="text-center px-4 py-3"><i class="fas fa-plug mr-1"></i>Porta</th>
+                    <th class="text-center px-4 py-3"><i class="fas fa-check-circle mr-1"></i>No Apache</th>
+                    <th class="text-left px-4 py-3"><i class="fab fa-github mr-1"></i>GitHub</th>
+                    <th class="text-right px-4 py-3"><i class="fas fa-tools mr-1"></i>Ações</th>
                 </tr>
             </thead>
             <tbody class="divide-y">
@@ -52,17 +52,17 @@
                         <td class="px-4 py-3 text-gray-600 text-xs">{{ $vhost->document_root }}</td>
                         <td class="px-4 py-3 text-center">
                             @if ($vhost->ssl_enabled)
-                                <span class="text-green-600 font-bold">Sim</span>
+                                <span class="text-green-600 font-bold"><i class="fas fa-check-circle"></i> Sim</span>
                             @else
-                                <span class="text-gray-400">Não</span>
+                                <span class="text-gray-400"><i class="fas fa-times-circle"></i> Não</span>
                             @endif
                         </td>
                         <td class="px-4 py-3 text-center">{{ $vhost->port }}</td>
                         <td class="px-4 py-3 text-center">
                             @if (in_array($vhost->server_name, $apacheNames ?? []))
-                                <span class="text-green-600">Sim</span>
+                                <span class="text-green-600"><i class="fas fa-check-circle"></i> Sim</span>
                             @else
-                                <span class="text-red-500">Não</span>
+                                <span class="text-red-500"><i class="fas fa-times-circle"></i> Não</span>
                             @endif
                         </td>
                         <td class="px-4 py-3">
@@ -75,19 +75,19 @@
                         </td>
                         <td class="px-4 py-3 text-right">
                             <a href="{{ route('virtual-hosts.show', $vhost) }}"
-                               class="text-gray-600 hover:text-gray-900 text-xs font-medium mr-2">Ver</a>
+                               class="text-gray-600 hover:text-gray-900 text-xs font-medium mr-2"><i class="fas fa-eye"></i> Ver</a>
                             <a href="{{ route('virtual-hosts.edit', $vhost) }}"
-                               class="text-indigo-600 hover:text-indigo-900 text-xs font-medium mr-2">Editar</a>
+                               class="text-indigo-600 hover:text-indigo-900 text-xs font-medium mr-2"><i class="fas fa-edit"></i> Editar</a>
                             <form action="{{ route('virtual-hosts.regenerate-cert', $vhost) }}" method="POST" class="inline"
                                   onsubmit="return confirm('Regenerar certificado SSL para {{ $vhost->server_name }}?')">
                                 @csrf
-                                <button type="submit" class="text-orange-500 hover:text-orange-700 text-xs font-medium mr-2">Cert</button>
+                                <button type="submit" class="text-orange-500 hover:text-orange-700 text-xs font-medium mr-2"><i class="fas fa-certificate"></i> Cert</button>
                             </form>
                             <form action="{{ route('virtual-hosts.destroy', $vhost) }}" method="POST" class="inline"
                                   onsubmit="return confirm('Excluir {{ $vhost->server_name }}? Isso vai remover o hosts, o certificado SSL e a config do Apache.')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900 text-xs font-medium">Excluir</button>
+                                <button type="submit" class="text-red-600 hover:text-red-900 text-xs font-medium"><i class="fas fa-trash-alt"></i> Excluir</button>
                             </form>
                         </td>
                     </tr>
@@ -95,7 +95,7 @@
                     <tr>
                         <td colspan="6" class="px-4 py-8 text-center text-gray-500">
                             Nenhum virtual host cadastrado ainda.
-                            <a href="{{ route('virtual-hosts.create') }}" class="text-indigo-600 hover:underline">Criar o primeiro</a>
+                            <a href="{{ route('virtual-hosts.create') }}" class="text-indigo-600 hover:underline"><i class="fas fa-plus-circle"></i> Criar o primeiro</a>
                         </td>
                     </tr>
                 @endforelse
