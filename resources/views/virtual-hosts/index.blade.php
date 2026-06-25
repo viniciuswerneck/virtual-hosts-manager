@@ -26,6 +26,24 @@
         </div>
     </div>
 
+    <div class="mb-4">
+        <form method="GET" action="{{ route('virtual-hosts.index') }}" class="flex gap-2">
+            <div class="relative flex-1 max-w-md">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Buscar por nome, diretório ou observações..."
+                       class="w-full border rounded pl-8 pr-3 py-2 text-sm bg-white">
+            </div>
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm">
+                <i class="fas fa-search mr-1"></i> Buscar
+            </button>
+            @if ($search)
+                <a href="{{ route('virtual-hosts.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm">
+                    <i class="fas fa-times mr-1"></i> Limpar
+                </a>
+            @endif
+        </form>
+    </div>
+
     <div class="bg-white rounded shadow overflow-hidden">
         <table class="w-full text-sm">
             <thead>
@@ -93,7 +111,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="7" class="px-4 py-8 text-center text-gray-500">
                             Nenhum virtual host cadastrado ainda.
                             <a href="{{ route('virtual-hosts.create') }}" class="text-indigo-600 hover:underline"><i class="fas fa-plus-circle"></i> Criar o primeiro</a>
                         </td>

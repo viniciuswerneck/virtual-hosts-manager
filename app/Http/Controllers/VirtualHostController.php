@@ -12,13 +12,21 @@ use RuntimeException;
 
 class VirtualHostController extends Controller
 {
-    public function index(ApacheService $apache)
+    public function index(ApacheService $apache, \Illuminate\Http\Request $request)
     {
-        $vhosts = VirtualHost::orderBy('server_name')->paginate(15);
+        $search = $request->input('search');
+
+        $vhosts = VirtualHost::when($search, fn($q) => $q->where('server_name', 'like', "%{$search}%")
+            ->orWhere('document_root', 'like', "%{$search}%")
+            ->orWhere('notes', 'like', "%{$search}%"))
+            ->orderBy('server_name')
+            ->paginate(15)
+            ->withQueryString();
+
         $apacheVhosts = $apache->parseExisting();
         $apacheNames = array_column($apacheVhosts, 'server_name');
 
-        return view('virtual-hosts.index', compact('vhosts', 'apacheNames'));
+        return view('virtual-hosts.index', compact('vhosts', 'apacheNames', 'search'));
     }
 
     public function show(VirtualHost $virtualHost)
