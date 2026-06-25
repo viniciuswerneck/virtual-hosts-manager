@@ -104,6 +104,10 @@
         @yield('content')
     </main>
 
+    <footer class="text-center text-gray-500 text-sm py-6">
+        Desenvolvido por <a href="https://lab.werneck.dev.br/" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300" target="_blank">Werneck Lab</a> &copy; 2024 - {{ date('Y') }}. Todos os direitos reservados.
+    </footer>
+
     <script>
         function toggleTheme() {
             const html = document.documentElement;
