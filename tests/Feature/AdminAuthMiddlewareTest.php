@@ -46,7 +46,7 @@ class AdminAuthMiddlewareTest extends TestCase
             'password' => $plain,
         ]);
 
-        $response->assertRedirect(route('virtual-hosts.index'));
+        $response->assertRedirect(route('dashboard'));
         $this->assertTrue(session()->get('admin_authenticated'));
     }
 
@@ -94,6 +94,6 @@ class AdminAuthMiddlewareTest extends TestCase
 
         $response = $this->get(route('admin.login'));
 
-        $response->assertRedirect(route('virtual-hosts.index'));
+        $response->assertRedirect(route('dashboard'));
     }
 }

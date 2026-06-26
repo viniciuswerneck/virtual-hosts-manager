@@ -9,5 +9,8 @@ return [
     'mkcert_dir' => env('MKCERT_DIR', 'C:/mkcert'),
     'mkcert_caroot' => env('MKCERT_CAROOT', storage_path('app/mkcert')),
     'apache_ssl_port' => env('APACHE_SSL_PORT', 443),
+    'apache_error_log' => env('APACHE_ERROR_LOG', 'C:/Apache24/logs/error.log'),
     'default_document_root' => env('DEFAULT_DOCUMENT_ROOT', 'D:/www/'),
+    'phpmyadmin_url' => env('PHPMYADMIN_URL', ''),
+    'vscode_executable' => env('VSCODE_EXECUTABLE', 'code'),
 ];

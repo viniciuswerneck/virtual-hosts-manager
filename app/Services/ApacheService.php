@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\File;
-use Symfony\Component\Process\Process;
 use Throwable;
 
 class ApacheService
@@ -66,7 +65,49 @@ class ApacheService
         $lines[] = '# =========================================================';
         $lines[] = '';
 
+        $lines[] = '# -----------------------------';
+        $lines[] = '# Catch-all padrao (dominios nao configurados / desativados)';
+        $lines[] = '# -----------------------------';
+        $lines[] = '<VirtualHost *:80>';
+        $lines[] = '    ServerName _default_';
+        $lines[] = '    DocumentRoot "D:/www/_default/public"';
+        $lines[] = '';
+        $lines[] = '    <Directory "D:/www/_default/public">';
+        $lines[] = '        AllowOverride All';
+        $lines[] = '        Require all granted';
+        $lines[] = '    </Directory>';
+        $lines[] = '</VirtualHost>';
+        $lines[] = '';
+
+        $certDir = rtrim(config('virtualhosts.mkcert_dir'), '/');
+        $defaultCert = "{$certDir}/localhost.pem";
+        $defaultKey = "{$certDir}/localhost-key.pem";
+        if (File::exists($defaultCert) && File::exists($defaultKey)) {
+            $lines[] = '<VirtualHost *:443>';
+            $lines[] = '    ServerName _default_';
+            $lines[] = '    DocumentRoot "D:/www/_default/public"';
+            $lines[] = '';
+            $lines[] = '    <Directory "D:/www/_default/public">';
+            $lines[] = '        AllowOverride All';
+            $lines[] = '        Require all granted';
+            $lines[] = '    </Directory>';
+            $lines[] = '    SSLEngine on';
+            $lines[] = "    SSLCertificateFile \"{$defaultCert}\"";
+            $lines[] = "    SSLCertificateKeyFile \"{$defaultKey}\"";
+            $lines[] = '</VirtualHost>';
+            $lines[] = '';
+        }
+
+        $lines[] = '# =========================================================';
+        $lines[] = '# Virtual Hosts dos projetos';
+        $lines[] = '# =========================================================';
+        $lines[] = '';
+
         foreach ($vhosts as $vhost) {
+            if (isset($vhost['active']) && !$vhost['active']) {
+                continue;
+            }
+
             $name = $vhost['server_name'];
             $root = $vhost['document_root'];
             $port = $vhost['port'] ?? 80;
@@ -86,6 +127,15 @@ class ApacheService
             $lines[] = '';
 
             if ($vhost['ssl_enabled']) {
+                $certDir = rtrim(config('virtualhosts.mkcert_dir'), '/');
+                $safeName = str_replace(['/', '\\', '..'], '', $name);
+                $certFile = "{$certDir}/{$safeName}.pem";
+                $keyFile = "{$certDir}/{$safeName}-key.pem";
+
+                if (!File::exists($certFile) || !File::exists($keyFile)) {
+                    continue;
+                }
+
                 $lines[] = "<VirtualHost *:{$this->sslPort}>";
                 $lines[] = "    ServerName {$name}";
                 $lines[] = "    DocumentRoot \"{$root}\"";
@@ -97,10 +147,8 @@ class ApacheService
                 $lines[] = '    </Directory>';
                 $lines[] = '';
                 $lines[] = '    SSLEngine on';
-                $certDir = rtrim(config('virtualhosts.mkcert_dir'), '/');
-                $safeName = str_replace(['/', '\\', '..'], '', $name);
-                $lines[] = "    SSLCertificateFile \"{$certDir}/{$safeName}.pem\"";
-                $lines[] = "    SSLCertificateKeyFile \"{$certDir}/{$safeName}-key.pem\"";
+                $lines[] = "    SSLCertificateFile \"{$certFile}\"";
+                $lines[] = "    SSLCertificateKeyFile \"{$keyFile}\"";
                 $lines[] = '</VirtualHost>';
                 $lines[] = '';
             }
@@ -118,44 +166,133 @@ class ApacheService
 
     public function restart(): array
     {
-        $output = $this->safeRun([$this->apacheBin, '-k', 'restart'], 5);
-        $httpdOutput = $output !== null ? $output : '';
+        set_time_limit(60);
 
-        if ($this->waitForRunning(3)) {
-            return ['success' => true, 'output' => $httpdOutput];
+        $isRunning = $this->isRunning();
+
+        // 1. Se está rodando, tenta httpd -k restart (funciona sem admin)
+        if ($isRunning) {
+            exec(sprintf('"%s" -k restart 2>&1', $this->apacheBin), $httpdOutputArr, $httpdExit);
+            $httpdOutput = $httpdOutputArr ? implode("\n", $httpdOutputArr) : null;
+
+            if ($httpdExit === 0 && $this->waitForRunning(10)) {
+                return ['success' => true, 'output' => $httpdOutput ?: 'Apache reiniciado via httpd -k restart.'];
+            }
+
+            // Se httpd -k restart falhou, tenta via serviço
+            $stopOutput = $this->safeRunShell("net stop {$this->apacheService}", 15);
+            if ($stopOutput !== null && !$this->isAccessDenied($stopOutput)) {
+                $this->waitForNotRunning(5);
+                $startOutput = $this->safeRunShell("net start {$this->apacheService}", 15);
+                if ($startOutput && !$this->isAccessDenied($startOutput)) {
+                    if ($this->waitForRunning(10)) {
+                        return ['success' => true, 'output' => "Apache reiniciado via serviço {$this->apacheService}."];
+                    }
+                }
+            }
+
+            // Tenta PowerShell elevado
+            $result = $this->restartViaElevatedPowerShell();
+            if ($result !== null) {
+                return $result;
+            }
+
+            // Último recurso: taskkill + iniciar direto
+            $this->safeRunShell("taskkill /F /IM httpd.exe", 5);
+            $this->waitForNotRunning(5);
+            $this->runApacheBackground();
+            if ($this->waitForRunning(10)) {
+                return ['success' => true, 'output' => 'Apache reiniciado via taskkill + httpd.'];
+            }
+
+            return [
+                'success' => false,
+                'output' => 'Falha ao reiniciar Apache. Execute como Administrador: net stop ' . $this->apacheService . ' && net start ' . $this->apacheService,
+            ];
         }
 
-        $this->safeRun(['taskkill', '/F', '/IM', 'httpd.exe'], 3);
-        $this->waitForNotRunning(2);
-
-        $startOutput = $this->safeRun([$this->apacheBin], 5);
-
-        if ($this->waitForRunning(3)) {
-            return ['success' => true, 'output' => 'Apache reiniciado manualmente.'];
+        // 2. Apache não está rodando — tenta iniciar
+        $startOutput = $this->safeRunShell("net start {$this->apacheService}", 15);
+        if ($startOutput && !$this->isAccessDenied($startOutput)) {
+            if ($this->waitForRunning(10)) {
+                return ['success' => true, 'output' => "Apache iniciado via serviço {$this->apacheService}."];
+            }
         }
 
-        $this->safeRun(['net', 'stop', $this->apacheService], 5);
-        $this->waitForNotRunning(2);
-
-        $this->safeRun(['net', 'start', $this->apacheService], 5);
-
-        if ($this->waitForRunning(5)) {
-            return ['success' => true, 'output' => "Apache reiniciado via servico {$this->apacheService}."];
+        // Tenta via PowerShell elevado
+        $result = $this->restartViaElevatedPowerShell();
+        if ($result !== null) {
+            return $result;
         }
 
-        $errorMsg = $startOutput ?: 'Falha ao iniciar Apache (sem resposta do binário)';
-        return ['success' => false, 'output' => $errorMsg];
+        // Tenta iniciar binário direto
+        $this->runApacheBackground();
+        if ($this->waitForRunning(10)) {
+            return ['success' => true, 'output' => 'Apache iniciado via httpd direto.'];
+        }
+
+        return [
+            'success' => false,
+            'output' => 'Falha ao iniciar Apache. Execute como Administrador no PowerShell: net start ' . $this->apacheService,
+        ];
     }
 
-    private function safeRun(array $command, int $timeout): ?string
+    private function isAccessDenied(string $output): bool
+    {
+        return str_contains($output, 'Acesso negado') || str_contains($output, 'Access denied');
+    }
+
+    private function restartViaElevatedPowerShell(): ?array
+    {
+        $script = "Stop-Service -Name '{$this->apacheService}'; Start-Service -Name '{$this->apacheService}'";
+        $encoded = base64_encode(mb_convert_encoding($script, 'UTF-16LE'));
+
+        $psArgs = "-NoProfile -ExecutionPolicy Bypass -EncodedCommand {$encoded}";
+        $cmd = "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Start-Process powershell -ArgumentList '{$psArgs}' -Verb RunAs -Wait\" 2>&1";
+
+        try {
+            set_time_limit(40);
+            exec($cmd, $output, $exitCode);
+            $outputStr = $output ? implode("\n", $output) : null;
+
+            if ($this->waitForRunning(10)) {
+                return ['success' => true, 'output' => 'Apache reiniciado via PowerShell elevado.'];
+            }
+
+            if ($outputStr && $this->isAccessDenied($outputStr)) {
+                return null;
+            }
+        } catch (\Throwable) {
+        }
+
+        return null;
+    }
+
+    private function safeRunShell(string $command, int $timeout): ?string
     {
         try {
-            $process = new Process($command);
-            $process->setTimeout($timeout);
-            $process->run();
-            return $process->getOutput() ?: $process->getErrorOutput();
+            set_time_limit($timeout + 10);
+            exec($command . ' 2>&1', $output, $exitCode);
+            return $output ? implode("\n", $output) : null;
         } catch (\Throwable) {
             return null;
+        }
+    }
+
+    private function runApacheBackground(): ?string
+    {
+        try {
+            $shell = new \COM("WScript.Shell");
+            $shell->Run($this->apacheBin, 0, false);
+            return null;
+        } catch (\Throwable) {
+            try {
+                $cmd = sprintf('start "" /B "%s" 2>&1', $this->apacheBin);
+                exec($cmd, $output, $exitCode);
+                return $output ? implode("\n", $output) : null;
+            } catch (\Throwable) {
+                return null;
+            }
         }
     }
 
@@ -185,46 +322,32 @@ class ApacheService
 
     public function isRunning(): bool
     {
-        return count($this->tasklist()) >= 2;
+        $lines = $this->tasklist();
+        foreach ($lines as $line) {
+            if (stripos($line, 'httpd.exe') !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function tasklist(): array
     {
-        try {
-            $process = new Process(['tasklist', '/NH', '/FI', 'IMAGENAME eq httpd.exe']);
-            $process->setTimeout(3);
-            $process->run();
-            return $process->isSuccessful() ? array_filter(explode("\n", $process->getOutput())) : [];
-        } catch (\Throwable) {
-            return [];
-        }
+        @exec('tasklist /NH /FI "IMAGENAME eq httpd.exe" 2>&1', $output, $exitCode);
+        return $exitCode === 0 ? array_filter($output) : [];
     }
 
     public function testConfig(): array
     {
-        $attempts = 2;
-        $delay = 500000;
-
-        for ($i = 0; $i < $attempts; $i++) {
-            $process = new Process([$this->apacheBin, '-t']);
-            $process->setTimeout(5);
-            $process->run();
-
-            if ($process->isSuccessful()) {
-                return [
-                    'success' => true,
-                    'output' => $process->getOutput() ?: $process->getErrorOutput(),
-                ];
-            }
-
-            if ($i < $attempts - 1) {
-                usleep($delay);
-            }
-        }
+        $cmd = sprintf('"%s" -t 2>&1', $this->apacheBin);
+        $output = [];
+        $exitCode = 0;
+        exec($cmd, $output, $exitCode);
+        $text = implode("\n", $output);
 
         return [
-            'success' => false,
-            'output' => $process->getOutput() ?: $process->getErrorOutput(),
+            'success' => $exitCode === 0,
+            'output' => $text,
         ];
     }
 }

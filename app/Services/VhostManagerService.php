@@ -17,10 +17,30 @@ class VhostManagerService
 
     public function applyApacheConfig(): array
     {
-        $allVhosts = VirtualHost::all()->toArray();
+        $allVhosts = VirtualHost::all(['server_name', 'document_root', 'ssl_enabled', 'port', 'active'])->toArray();
         $vhostsFile = $this->apache->getVhostsFile();
 
         $this->apache->writeConfig($allVhosts);
+
+        $certDir = rtrim(config('virtualhosts.mkcert_dir'), '/');
+        $missingSsl = [];
+        foreach ($allVhosts as $v) {
+            if (!empty($v['ssl_enabled'])) {
+                $certFile = "{$certDir}/{$v['server_name']}.pem";
+                $keyFile = "{$certDir}/{$v['server_name']}-key.pem";
+                if (!File::exists($certFile) || !File::exists($keyFile)) {
+                    $missingSsl[] = $v['server_name'];
+                }
+            }
+        }
+
+        if ($missingSsl) {
+            $list = implode(', ', $missingSsl);
+            return [
+                'type' => 'warning',
+                'message' => "Configuração salva. Certificados SSL ausentes para: {$list}. Os blocos SSL foram ignorados. Use o botão 'Regenerar Certificado' em cada vhost.",
+            ];
+        }
 
         try {
             $test = $this->apache->testConfig();
@@ -33,15 +53,10 @@ class VhostManagerService
         }
 
         if (!$test['success']) {
-            $errOutput = $test['output'];
-            $isSslError = str_contains($errOutput, 'AH00141') || str_contains($errOutput, 'random number generator');
-
-            if (!$isSslError) {
-                return [
-                    'type' => 'warning',
-                    'message' => 'A configuração foi salva, mas o Apache reportou um erro de sintaxe: ' . $errOutput,
-                ];
-            }
+            return [
+                'type' => 'warning',
+                'message' => 'A configuração foi salva, mas o Apache reportou um erro de sintaxe: ' . $test['output'],
+            ];
         }
 
         Cache::forget('apache_running');
@@ -67,13 +82,6 @@ class VhostManagerService
             return [
                 'type' => 'warning',
                 'message' => "Apache precisa ser reiniciado manualmente como Administrador. No PowerShell Admin: net stop {$service} && net start {$service}",
-            ];
-        }
-
-        if (str_contains($msg, 'AH00141') || str_contains($msg, 'random number generator')) {
-            return [
-                'type' => 'warning',
-                'message' => "Apache com erro de SSL (AH00141). O Apache foi configurado, mas precisa ser reiniciado manualmente como Administrador: net stop {$service} && net start {$service}. Se o erro persistir, comente 'LoadModule ssl_module' no httpd.conf se nao precisar de SSL.",
             ];
         }
 

@@ -16,10 +16,13 @@ class SettingsController extends Controller
             'apache_bin' => config('virtualhosts.apache_bin'),
             'apache_service' => config('virtualhosts.apache_service'),
             'apache_ssl_port' => config('virtualhosts.apache_ssl_port'),
+            'apache_error_log' => config('virtualhosts.apache_error_log'),
             'hosts_file' => config('virtualhosts.hosts_file'),
             'mkcert_bin' => config('virtualhosts.mkcert_bin'),
             'mkcert_dir' => config('virtualhosts.mkcert_dir'),
             'default_document_root' => config('virtualhosts.default_document_root'),
+            'phpmyadmin_url' => config('virtualhosts.phpmyadmin_url'),
+            'vscode_executable' => config('virtualhosts.vscode_executable'),
         ];
 
         foreach ($config as $key => $value) {
@@ -35,7 +38,9 @@ class SettingsController extends Controller
     {
         $keys = [
             'apache_vhosts_file', 'apache_bin', 'apache_service', 'apache_ssl_port',
+            'apache_error_log',
             'hosts_file', 'mkcert_bin', 'mkcert_dir', 'default_document_root',
+            'phpmyadmin_url', 'vscode_executable',
         ];
 
         $rules = [];

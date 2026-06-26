@@ -27,7 +27,7 @@ class VhostManagerServiceTest extends TestCase
 
     public function test_apply_apache_config_writes_and_restarts()
     {
-        VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test']);
+        VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test', 'ssl_enabled' => false]);
 
         $this->mock(ApacheService::class, function ($mock) {
             $mock->shouldReceive('getVhostsFile')->once()->andReturn('C:/Apache24/conf/extra/httpd-vhosts.conf');
@@ -44,7 +44,7 @@ class VhostManagerServiceTest extends TestCase
 
     public function test_apply_apache_config_returns_warning_on_restart_failure()
     {
-        VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test']);
+        VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test', 'ssl_enabled' => false]);
 
         $this->mock(ApacheService::class, function ($mock) {
             $mock->shouldReceive('getVhostsFile')->once()->andReturn('C:/Apache24/conf/extra/httpd-vhosts.conf');
@@ -62,7 +62,7 @@ class VhostManagerServiceTest extends TestCase
 
     public function test_apply_apache_config_returns_warning_on_config_error()
     {
-        VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test']);
+        VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test', 'ssl_enabled' => false]);
 
         $this->mock(ApacheService::class, function ($mock) {
             $mock->shouldReceive('getVhostsFile')->once()->andReturn('C:/Apache24/conf/extra/httpd-vhosts.conf');
@@ -78,21 +78,30 @@ class VhostManagerServiceTest extends TestCase
         $this->assertStringContainsString('Syntax error', $result['message']);
     }
 
-    public function test_apply_apache_config_does_not_throw_on_ssl_error()
+    public function test_apply_apache_config_returns_warning_on_config_error_ah00141()
     {
-        VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test']);
+        VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test', 'ssl_enabled' => true]);
+
+        $certDir = sys_get_temp_dir() . '/mkcert_test_' . uniqid();
+        File::makeDirectory($certDir, 0777, true, true);
+        File::put("{$certDir}/test.local.pem", 'fake-cert');
+        File::put("{$certDir}/test.local-key.pem", 'fake-key');
+        config()->set('virtualhosts.mkcert_dir', $certDir);
 
         $this->mock(ApacheService::class, function ($mock) {
             $mock->shouldReceive('getVhostsFile')->once()->andReturn('C:/Apache24/conf/extra/httpd-vhosts.conf');
             $mock->shouldReceive('writeConfig')->once();
             $mock->shouldReceive('testConfig')->once()->andReturn(['success' => false, 'output' => 'AH00141']);
-            $mock->shouldReceive('restart')->once()->andReturn(['success' => true, 'output' => 'OK']);
+            $mock->shouldReceive('restart')->never();
         });
 
         $service = app(VhostManagerService::class);
         $result = $service->applyApacheConfig();
 
-        $this->assertEquals('success', $result['type']);
+        File::deleteDirectory($certDir);
+
+        $this->assertEquals('warning', $result['type']);
+        $this->assertStringContainsString('AH00141', $result['message']);
     }
 
     public function test_sync_from_apache_imports_vhosts()

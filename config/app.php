@@ -120,7 +120,7 @@ return [
 
     'admin_password' => env('ADMIN_PASSWORD'),
 
-    'version' => env('APP_VERSION', '1.1.0'),
+    'version' => env('APP_VERSION', '1.2.0'),
 
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),

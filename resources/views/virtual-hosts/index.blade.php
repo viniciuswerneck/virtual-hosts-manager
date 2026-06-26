@@ -86,28 +86,40 @@
                     <th class="text-center px-4 py-3"><i class="fas fa-lock mr-1"></i>SSL</th>
                     <th class="text-center px-4 py-3"><i class="fas fa-certificate mr-1"></i>Cert</th>
                     <th class="text-center px-4 py-3"><i class="fas fa-plug mr-1"></i>Porta</th>
+                    <th class="text-center px-4 py-3"><i class="fas fa-power-off mr-1"></i>Ativo</th>
                     <th class="text-center px-4 py-3"><i class="fas fa-check-circle mr-1"></i>No Apache</th>
                     <th class="text-center px-4 py-3"><i class="fas fa-tools mr-1"></i>Ações</th>
                 </tr>
             </thead>
             <tbody class="divide-y">
                 @forelse ($vhosts as $vhost)
-                    <tr class="odd:bg-white even:bg-gray-50 hover:bg-gray-100">
+                    <tr class="odd:bg-white even:bg-gray-50 hover:bg-gray-100 {{ !$vhost->active ? 'opacity-60' : '' }}">
                         <td class="px-4 py-3 font-medium">
-                            <a href="{{ $vhost->ssl_enabled ? 'https' : 'http' }}://{{ $vhost->server_name }}"
-                               target="_blank" rel="noopener noreferrer"
-                               class="text-indigo-600 hover:text-indigo-900 hover:underline">
-                                {{ $vhost->server_name }}
-                            </a>
-                            <button type="button" onclick="copyToClipboard('{{ $vhost->server_name }}')" class="text-gray-400 hover:text-gray-600 ml-1" title="Copiar server_name">
-                                <i class="fas fa-copy text-xs"></i>
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full {{ $vhost->active ? 'bg-green-500' : 'bg-gray-300' }}"></span>
+                                <a href="{{ $vhost->ssl_enabled ? 'https' : 'http' }}://{{ $vhost->server_name }}"
+                                   target="_blank" rel="noopener noreferrer"
+                                   class="text-indigo-600 hover:text-indigo-900 hover:underline">
+                                    {{ $vhost->server_name }}
+                                </a>
+                                <button type="button" onclick="copyToClipboard('{{ $vhost->server_name }}')" class="text-gray-400 hover:text-gray-600" title="Copiar server_name">
+                                    <i class="fas fa-copy text-xs"></i>
+                                </button>
+                            </div>
                         </td>
                         <td class="px-4 py-3 text-gray-600 text-xs">
-                            {{ $vhost->document_root }}
-                            <button type="button" onclick="copyToClipboard('{{ addslashes($vhost->document_root) }}')" class="text-gray-400 hover:text-gray-600 ml-1" title="Copiar document_root">
-                                <i class="fas fa-copy text-xs"></i>
-                            </button>
+                            <div class="flex items-center gap-1">
+                                <span>{{ $vhost->document_root }}</span>
+                                <button type="button" onclick="copyToClipboard('{{ addslashes($vhost->document_root) }}')" class="text-gray-400 hover:text-gray-600" title="Copiar document_root">
+                                    <i class="fas fa-copy text-xs"></i>
+                                </button>
+                                <button type="button" onclick="openInVSCode('{{ $vhost->document_root }}')" class="text-blue-400 hover:text-blue-600" title="Abrir no VS Code">
+                                    <i class="fas fa-code text-xs"></i>
+                                </button>
+                            </div>
+                            @if ($vhost->template)
+                                <span class="text-gray-400 text-xs mt-1 inline-block bg-gray-100 px-1.5 py-0.5 rounded">{{ $vhost->template }}</span>
+                            @endif
                         </td>
                         <td class="px-4 py-3 text-center">
                             @if ($vhost->ssl_enabled)
@@ -129,6 +141,15 @@
                         </td>
                         <td class="px-4 py-3 text-center">{{ $vhost->port }}</td>
                         <td class="px-4 py-3 text-center">
+                            <form action="{{ route('virtual-hosts.toggle', $vhost) }}" method="POST" class="inline"
+                                  onsubmit="return confirm('{{ $vhost->active ? 'Desativar' : 'Ativar' }} {{ $vhost->server_name }}?')">
+                                @csrf
+                                <button type="submit" class="text-xs font-medium inline-flex items-center gap-1 {{ $vhost->active ? 'text-green-600' : 'text-gray-400' }} hover:underline">
+                                    <i class="fas {{ $vhost->active ? 'fa-toggle-on' : 'fa-toggle-off' }} text-lg"></i>
+                                </button>
+                            </form>
+                        </td>
+                        <td class="px-4 py-3 text-center">
                             @if (in_array($vhost->server_name, $apacheNames ?? []))
                                 <span class="text-green-600"><i class="fas fa-check-circle"></i> Sim</span>
                             @else
@@ -140,11 +161,13 @@
                                class="text-gray-600 hover:text-gray-900 text-xs font-medium mr-1"><i class="fas fa-eye"></i></a>
                             <a href="{{ route('virtual-hosts.edit', $vhost) }}" title="Editar"
                                class="text-indigo-600 hover:text-indigo-900 text-xs font-medium mr-1"><i class="fas fa-edit"></i></a>
+                            @if ($vhost->ssl_enabled)
                             <form action="{{ route('virtual-hosts.regenerate-cert', $vhost) }}" method="POST" class="inline"
                                   onsubmit="return confirm('Regenerar certificado SSL de {{ $vhost->server_name }}?')">
                                 @csrf
                                 <button type="submit" class="text-orange-500 hover:text-orange-700 text-xs font-medium mr-1" title="Regenerar certificado"><i class="fas fa-certificate"></i></button>
                             </form>
+                            @endif
                             <form action="{{ route('virtual-hosts.destroy', $vhost) }}" method="POST" class="inline"
                                   onsubmit="return confirm('Excluir {{ $vhost->server_name }}? Isso remove o hosts, certificado SSL e config do Apache.')">
                                 @csrf
@@ -155,7 +178,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-12 text-center text-gray-500">
+                        <td colspan="8" class="px-4 py-12 text-center text-gray-500">
                             <i class="fas fa-globe text-4xl text-gray-300 mb-3 block"></i>
                             <p class="mb-2">Nenhum virtual host cadastrado ainda.</p>
                             <a href="{{ route('virtual-hosts.create') }}" class="text-indigo-600 hover:underline font-medium"><i class="fas fa-plus-circle"></i> Criar o primeiro</a>

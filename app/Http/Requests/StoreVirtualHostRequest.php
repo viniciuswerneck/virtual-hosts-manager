@@ -33,6 +33,8 @@ class StoreVirtualHostRequest extends FormRequest
             ],
             'document_root' => 'required|string',
             'ssl_enabled' => 'boolean',
+            'active' => 'boolean',
+            'template' => 'nullable|string|in:laravel,wordpress,html,php',
             'port' => 'integer|min:1|max:65535',
             'notes' => 'nullable|string',
             'github_url' => 'nullable|url',

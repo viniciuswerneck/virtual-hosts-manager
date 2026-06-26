@@ -77,8 +77,8 @@ class VirtualHostControllerTest extends TestCase
         });
 
         $this->mock(MkcertService::class, function ($mock) {
-            $mock->shouldReceive('certExists')->once()->andReturn(false);
-            $mock->shouldReceive('generate')->once()->andReturn(['success' => true, 'output' => '']);
+            $mock->shouldReceive('certExists')->never();
+            $mock->shouldReceive('generate')->never();
         });
 
         $this->mock(ApacheService::class, function ($mock) {
@@ -92,7 +92,7 @@ class VirtualHostControllerTest extends TestCase
             'server_name' => 'meusite.local',
             'document_root' => 'D:/www/meusite',
             'port' => 80,
-            'ssl_enabled' => true,
+            'ssl_enabled' => false,
         ]);
 
         $response->assertRedirect(route('virtual-hosts.index'));

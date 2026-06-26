@@ -7,6 +7,7 @@ use App\Models\VirtualHost;
 use App\Services\ApacheService;
 use App\Services\HostsFileService;
 use App\Services\MkcertService;
+use App\Services\ProjectScaffoldService;
 use App\Services\VhostManagerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -54,14 +55,25 @@ class VirtualHostController extends Controller
         HostsFileService $hosts,
         MkcertService $mkcert,
         VhostManagerService $manager,
+        ProjectScaffoldService $scaffold,
     ) {
         $data = $request->validated();
         $serverName = $data['server_name'];
+        $template = $data['template'] ?? null;
+        $githubUrl = $data['github_url'] ?? null;
 
+        $scaffolded = false;
         $hostEntryAdded = false;
         $certGenerated = false;
 
         try {
+            if ($template || $githubUrl) {
+                $result = $scaffold->scaffold($template, $data['document_root'], $githubUrl);
+                if ($result['success']) {
+                    $scaffolded = true;
+                }
+            }
+
             $vhost = VirtualHost::create($data);
 
             $hosts->addEntry($serverName);
@@ -77,8 +89,13 @@ class VirtualHostController extends Controller
 
             $result = $manager->applyApacheConfig();
 
+            $msg = "Virtual host {$serverName} criado com sucesso!";
+            if ($scaffolded) {
+                $msg .= " Projeto scaffolded no diretório.";
+            }
+
             return redirect()->route('virtual-hosts.index')
-                ->with($result['type'], "Virtual host {$serverName} criado com sucesso!|{$result['message']}");
+                ->with($result['type'], "{$msg}|{$result['message']}");
         } catch (\Throwable $e) {
             if (isset($vhost)) {
                 $vhost->delete();
@@ -165,6 +182,36 @@ class VirtualHostController extends Controller
         }
     }
 
+    public function toggleActive(VirtualHost $virtualHost, VhostManagerService $manager, ApacheService $apache)
+    {
+        $wasActive = $virtualHost->active;
+        $virtualHost->update(['active' => !$wasActive]);
+
+        $configWritten = false;
+        $apacheRestarted = false;
+
+        try {
+            $result = $manager->applyApacheConfig();
+            $configWritten = true;
+            $apacheRestarted = $result['type'] === 'success';
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('warning', "Vhost alternado no banco, mas erro ao aplicar config: {$e->getMessage()}");
+        }
+
+        Cache::forget('apache_running');
+
+        $status = $virtualHost->active ? 'ativado' : 'desativado';
+
+        if (!$configWritten || !$apacheRestarted) {
+            $service = config('virtualhosts.apache_service');
+            return redirect()->back()
+                ->with('warning', "Vhost {$status} no banco, mas o Apache precisa ser reiniciado para aplicar as mudanças.|{$result['message']}<br><br>Execute no PowerShell como Administrador:<br><code>net stop {$service} && net start {$service}</code>");
+        }
+
+        return redirect()->back()
+            ->with('success', "Virtual host {$virtualHost->server_name} {$status} com sucesso! Apache reiniciado.");
+    }
+
     public function exportJson()
     {
         $vhosts = VirtualHost::orderBy('server_name')->get(['server_name', 'document_root', 'ssl_enabled', 'port', 'notes', 'github_url']);
@@ -221,9 +268,26 @@ class VirtualHostController extends Controller
             ->with('success', "{$count} virtual hosts importados do Apache com sucesso!");
     }
 
-    public function restartApache(ApacheService $apache)
+    public function restartApache(ApacheService $apache, VhostManagerService $manager)
     {
         $service = config('virtualhosts.apache_service');
+
+        $allVhosts = \App\Models\VirtualHost::all(['server_name', 'document_root', 'ssl_enabled', 'port', 'active'])->toArray();
+
+        try {
+            $apache->writeConfig($allVhosts);
+        } catch (\Throwable $e) {
+            return redirect()->route('virtual-hosts.index')
+                ->with('error', 'Erro ao reescrever config do Apache: ' . $e->getMessage());
+        }
+
+        $test = $apache->testConfig();
+        if (!$test['success']) {
+            Cache::forget('apache_running');
+            return redirect()->route('virtual-hosts.index')
+                ->with('error', 'Erro de sintaxe no Apache: ' . $test['output']);
+        }
+
         $result = $apache->restart();
 
         Cache::forget('apache_running');
@@ -233,19 +297,8 @@ class VirtualHostController extends Controller
                 ->with('success', 'Apache reiniciado com sucesso!');
         }
 
-        $output = $result['output'];
-        if (str_contains($output, 'Acesso negado') || str_contains($output, 'Access denied')) {
-            return redirect()->route('virtual-hosts.index')
-                ->with('error', "Permissão negada. Execute no PowerShell como Administrador: net stop {$service} && net start {$service}");
-        }
-
-        if (str_contains($output, 'AH00141') || str_contains($output, 'random number generator')) {
-            return redirect()->route('virtual-hosts.index')
-                ->with('warning', "Apache com erro de SSL (AH00141). Tente reiniciar manualmente no PowerShell como Administrador: net stop {$service} && net start {$service}. Se persistir, edite o httpd.conf e comente a linha 'LoadModule ssl_module' se nao precisar de SSL.");
-        }
-
         return redirect()->route('virtual-hosts.index')
-            ->with('error', 'Erro ao reiniciar Apache: ' . $output);
+            ->with('error', $result['output']);
     }
 
     public function regenerateCert(VirtualHost $virtualHost, VhostManagerService $manager)

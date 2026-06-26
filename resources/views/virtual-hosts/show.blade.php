@@ -5,7 +5,10 @@
 @section('content')
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-server text-indigo-600 mr-2"></i>{{ $virtualHost->server_name }}</h1>
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full {{ $virtualHost->active ? 'bg-green-500' : 'bg-gray-300' }}"></span>
+                <i class="fas fa-server text-indigo-600 mr-1"></i>{{ $virtualHost->server_name }}
+            </h1>
             <p class="text-gray-500 text-sm mt-1"><i class="fas fa-info-circle mr-1"></i>Detalhes do virtual host</p>
         </div>
         <div class="flex gap-2">
@@ -26,34 +29,68 @@
                 <tr>
                     <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600 w-1/3"><i class="fas fa-server mr-1"></i>Servidor</th>
                     <td class="px-4 py-3">
-                        <a href="{{ $virtualHost->ssl_enabled ? 'https' : 'http' }}://{{ $virtualHost->server_name }}"
-                           target="_blank" rel="noopener noreferrer"
-                           class="text-indigo-600 hover:text-indigo-900 hover:underline">
-                            {{ $virtualHost->server_name }}
-                        </a>
-                        <button type="button" onclick="copyToClipboard('{{ $virtualHost->server_name }}')" class="text-gray-400 hover:text-gray-600 ml-1" title="Copiar server_name">
-                            <i class="fas fa-copy"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ $virtualHost->ssl_enabled ? 'https' : 'http' }}://{{ $virtualHost->server_name }}"
+                               target="_blank" rel="noopener noreferrer"
+                               class="text-indigo-600 hover:text-indigo-900 hover:underline">
+                                {{ $virtualHost->server_name }}
+                            </a>
+                            <button type="button" onclick="copyToClipboard('{{ $virtualHost->server_name }}')" class="text-gray-400 hover:text-gray-600" title="Copiar server_name">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <a href="{{ $virtualHost->ssl_enabled ? 'https' : 'http' }}://{{ $virtualHost->server_name }}"
+                               target="_blank" class="text-green-600 hover:text-green-800 text-xs" title="Abrir site">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 <tr>
                     <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-folder mr-1"></i>Diretório Raiz</th>
-                    <td class="px-4 py-3 text-gray-600">
-                        <span>{{ $virtualHost->document_root }}</span>
-                        <button type="button" onclick="copyToClipboard('{{ addslashes($virtualHost->document_root) }}')" class="text-gray-400 hover:text-gray-600 ml-1" title="Copiar document_root">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                        @if (\Illuminate\Support\Facades\File::exists($virtualHost->document_root))
-                            <a href="file:///{{ str_replace('/', '\\', $virtualHost->document_root) }}" target="_blank"
-                               class="text-indigo-600 hover:text-indigo-900 text-xs ml-2" title="Abrir no Explorer">
-                                <i class="fas fa-external-link-alt"></i> Abrir
-                            </a>
-                        @endif
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-600">{{ $virtualHost->document_root }}</span>
+                            <button type="button" onclick="copyToClipboard('{{ addslashes($virtualHost->document_root) }}')" class="text-gray-400 hover:text-gray-600" title="Copiar document_root">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div class="flex gap-2 mt-1">
+                            @if (\Illuminate\Support\Facades\File::exists($virtualHost->document_root))
+                                <a href="file:///{{ str_replace('/', '\\', $virtualHost->document_root) }}" target="_blank"
+                                   class="text-indigo-600 hover:text-indigo-900 text-xs inline-flex items-center gap-1" title="Abrir no Explorer">
+                                    <i class="fas fa-folder-open"></i> Explorer
+                                </a>
+                                <button type="button" onclick="openInVSCode('{{ $virtualHost->document_root }}')"
+                                   class="text-blue-600 hover:text-blue-900 text-xs inline-flex items-center gap-1" title="Abrir no VS Code">
+                                    <i class="fas fa-code"></i> VS Code
+                                </button>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 <tr>
                     <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-plug mr-1"></i>Porta</th>
                     <td class="px-4 py-3">{{ $virtualHost->port }}</td>
+                </tr>
+                <tr>
+                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-power-off mr-1"></i>Status</th>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                            @if ($virtualHost->active)
+                                <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full"><i class="fas fa-check-circle"></i> Ativo</span>
+                            @else
+                                <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 text-xs font-medium px-2 py-0.5 rounded-full"><i class="fas fa-times-circle"></i> Inativo</span>
+                            @endif
+                            <form action="{{ route('virtual-hosts.toggle', $virtualHost) }}" method="POST" class="inline"
+                                  onsubmit="return confirm('{{ $virtualHost->active ? 'Desativar' : 'Ativar' }} {{ $virtualHost->server_name }}?')">
+                                @csrf
+                                <button type="submit" class="text-xs text-indigo-600 hover:underline">
+                                    <i class="fas fa-toggle-{{ $virtualHost->active ? 'on' : 'off' }}"></i>
+                                    {{ $virtualHost->active ? 'Desativar' : 'Ativar' }}
+                                </button>
+                            </form>
+                        </div>
+                    </td>
                 </tr>
                 <tr>
                     <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-lock mr-1"></i>SSL</th>
@@ -71,15 +108,31 @@
                         @endif
                     </td>
                 </tr>
+                @if ($virtualHost->template)
+                <tr>
+                    <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fas fa-magic mr-1"></i>Template</th>
+                    <td class="px-4 py-3">
+                        <span class="bg-gray-100 text-gray-700 text-xs font-medium px-2 py-0.5 rounded">
+                            {{ ucfirst($virtualHost->template) }}
+                        </span>
+                    </td>
+                </tr>
+                @endif
                 @if ($virtualHost->github_url)
                 <tr>
                     <th class="bg-gray-50 text-left px-4 py-3 font-medium text-gray-600"><i class="fab fa-github mr-1"></i>GitHub</th>
                     <td class="px-4 py-3">
-                        <a href="{{ $virtualHost->github_url }}" target="_blank" rel="noopener noreferrer"
-                           class="text-indigo-600 hover:text-indigo-900 hover:underline flex items-center gap-1">
-                            <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                            {{ $virtualHost->github_url }}
-                        </a>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ $virtualHost->github_url }}" target="_blank" rel="noopener noreferrer"
+                               class="text-indigo-600 hover:text-indigo-900 hover:underline flex items-center gap-1">
+                                <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                                {{ $virtualHost->github_url }}
+                            </a>
+                            <a href="{{ $virtualHost->github_url }}" target="_blank"
+                               class="text-gray-400 hover:text-gray-600 text-xs" title="Abrir repositório">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 @endif
@@ -102,11 +155,21 @@
     </div>
 
     <div class="mt-4 flex gap-2">
+        @if ($virtualHost->ssl_enabled)
         <form action="{{ route('virtual-hosts.regenerate-cert', $virtualHost) }}" method="POST" class="inline"
               onsubmit="return confirm('Regenerar certificado SSL para {{ $virtualHost->server_name }}?')">
             @csrf
             <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm">
                 <i class="fas fa-certificate mr-1"></i> Regenerar Certificado
+            </button>
+        </form>
+        @endif
+        <form action="{{ route('virtual-hosts.toggle', $virtualHost) }}" method="POST" class="inline"
+              onsubmit="return confirm('{{ $virtualHost->active ? 'Desativar' : 'Ativar' }} {{ $virtualHost->server_name }}?')">
+            @csrf
+            <button type="submit" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm">
+                <i class="fas fa-toggle-{{ $virtualHost->active ? 'on' : 'off' }} mr-1"></i>
+                {{ $virtualHost->active ? 'Desativar' : 'Ativar' }}
             </button>
         </form>
         <form action="{{ route('virtual-hosts.destroy', $virtualHost) }}" method="POST" class="inline"

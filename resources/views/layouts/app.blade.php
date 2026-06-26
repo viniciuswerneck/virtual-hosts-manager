@@ -81,10 +81,12 @@
     <nav class="bg-indigo-700 text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex items-center justify-between h-16">
-                <a href="{{ route('virtual-hosts.index') }}" class="font-bold text-lg"><i class="fas fa-server mr-2"></i>Hosts Manager</a>
+                <a href="{{ route('dashboard') }}" class="font-bold text-lg"><i class="fas fa-server mr-2"></i>Hosts Manager</a>
                 <div class="flex items-center gap-4 text-sm">
+                    <a href="{{ route('dashboard') }}" class="hover:text-indigo-200"><i class="fas fa-tachometer-alt mr-1"></i>Dashboard</a>
                     <a href="{{ route('virtual-hosts.index') }}" class="hover:text-indigo-200"><i class="fas fa-list mr-1"></i>Listar</a>
                     <a href="{{ route('virtual-hosts.create') }}" class="hover:text-indigo-200"><i class="fas fa-plus-circle mr-1"></i>Novo Host</a>
+                    <a href="{{ route('logs.index') }}" class="hover:text-indigo-200"><i class="fas fa-file-alt mr-1"></i>Logs</a>
                     <a href="{{ route('settings.index') }}" class="hover:text-indigo-200"><i class="fas fa-cog mr-1"></i>Config</a>
                     @php
                         $apacheOnline = \Illuminate\Support\Facades\Cache::remember('apache_running', 10, function () {
@@ -181,6 +183,11 @@
         function openExplorer() {
             var path = document.getElementById('document_root').value.replace(/\//g, '\\');
             window.open('file:///' + path, '_blank');
+        }
+
+        function openInVSCode(path) {
+            var vsPath = path.replace(/\//g, '\\');
+            window.open('vscode://file/' + vsPath, '_blank');
         }
 
         function copyToClipboard(text) {

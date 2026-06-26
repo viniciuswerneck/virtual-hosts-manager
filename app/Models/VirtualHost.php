@@ -14,6 +14,8 @@ class VirtualHost extends Model
         'document_root',
         'ssl_enabled',
         'port',
+        'active',
+        'template',
         'notes',
         'github_url',
     ];
@@ -22,7 +24,13 @@ class VirtualHost extends Model
     {
         return [
             'ssl_enabled' => 'boolean',
+            'active' => 'boolean',
             'port' => 'integer',
         ];
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('active', true);
     }
 }

@@ -48,6 +48,18 @@
             </div>
 
             <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-magic mr-1 text-gray-500"></i>Template do Projeto</label>
+                <select name="template" class="w-full border rounded px-3 py-2 text-sm bg-white">
+                    <option value="" {{ !old('template') ? 'selected' : '' }}>Nenhum (apenas criar vhost)</option>
+                    <option value="laravel" {{ old('template') === 'laravel' ? 'selected' : '' }}>Laravel (composer create-project)</option>
+                    <option value="wordpress" {{ old('template') === 'wordpress' ? 'selected' : '' }}>WordPress (download + extract)</option>
+                    <option value="html" {{ old('template') === 'html' ? 'selected' : '' }}>HTML + Tailwind (estático)</option>
+                    <option value="php" {{ old('template') === 'php' ? 'selected' : '' }}>PHP Puro (index.php + config.php)</option>
+                </select>
+                <p class="text-gray-400 text-xs mt-1">Escolha um template para iniciar o projeto automaticamente no diretório. Se preencher o GitHub, o template é ignorado.</p>
+            </div>
+
+            <div class="mb-4">
                 <label class="flex items-center gap-2">
                     <input type="checkbox" name="ssl_enabled" value="1" {{ old('ssl_enabled', true) ? 'checked' : '' }}
                            class="rounded border-gray-300">
@@ -57,13 +69,14 @@
             </div>
 
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fab fa-github mr-1 text-gray-500"></i>GitHub</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fab fa-github mr-1 text-gray-500"></i>GitHub (clonar repositório)</label>
                 <input type="url" name="github_url" value="{{ old('github_url') }}"
                        class="w-full border rounded px-3 py-2 text-sm bg-white @error('github_url') border-red-500 @enderror"
                        placeholder="https://github.com/usuario/repositorio">
                 @error('github_url')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
+                <p class="text-gray-400 text-xs mt-1">Se preenchido, o repositório será clonado no diretório raiz.</p>
             </div>
 
             <div class="mb-4">

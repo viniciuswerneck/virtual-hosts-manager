@@ -55,6 +55,16 @@
             </div>
 
             <div class="mb-4">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" name="active" value="1"
+                           {{ old('active', $virtualHost->active) ? 'checked' : '' }}
+                           class="rounded border-gray-300">
+                    <span class="text-sm font-medium text-gray-700"><i class="fas fa-power-off mr-1"></i>Ativo</span>
+                </label>
+                <p class="text-gray-400 text-xs mt-1">Vhosts inativos são ignorados na configuração do Apache.</p>
+            </div>
+
+            <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fab fa-github mr-1 text-gray-500"></i>GitHub</label>
                 <input type="url" name="github_url" value="{{ old('github_url', $virtualHost->github_url) }}"
                        class="w-full border rounded px-3 py-2 text-sm bg-white @error('github_url') border-red-500 @enderror"
