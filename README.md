@@ -542,4 +542,4 @@ APACHE_VHOSTS_FILE=C:/caminho/para/httpd-vhosts.conf
 
 ## 📄 Licença
 
-Este projeto é open-source. Desenvolvido por [Werneck Lab](https://lab.werneck.dev.br/) &copy; 2024-{{ date('Y') }} com Laravel.
+Este projeto é open-source. Desenvolvido por [Werneck Lab](https://lab.werneck.dev.br/) &copy; 2024-2026 com Laravel.
