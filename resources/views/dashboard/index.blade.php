@@ -390,14 +390,28 @@
                     </span>
                     Histórico
                 </a>
-                <a href="{{ route('file-manager.index') }}"
+                 <a href="{{ route('file-manager.index') }}"
                    class="flex items-center gap-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3.5 text-sm font-medium text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all">
-                    <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-300">
-                        <i class="fas fa-folder-open"></i>
-                    </span>
-                    Arquivos
-                </a>
-                @php
+                     <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-300">
+                         <i class="fas fa-folder-open"></i>
+                     </span>
+                     Arquivos
+                 </a>
+                 <a href="{{ route('config.php.index') }}"
+                   class="flex items-center gap-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3.5 text-sm font-medium text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all">
+                     <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300">
+                         <i class="fab fa-php"></i>
+                     </span>
+                     PHP.ini
+                 </a>
+                 <a href="{{ route('config.apache.index') }}"
+                   class="flex items-center gap-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3.5 text-sm font-medium text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all">
+                     <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300">
+                         <i class="fas fa-server"></i>
+                     </span>
+                     httpd.conf
+                 </a>
+                 @php
                     $phpmyadmin = config('virtualhosts.phpmyadmin_url');
                     $pmaUser = config('virtualhosts.phpmyadmin_user');
                     $pmaPass = config('virtualhosts.phpmyadmin_password');

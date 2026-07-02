@@ -32,7 +32,7 @@ class ProjectScaffoldService
             return ['success' => true, 'message' => "Projeto clonado de {$url}"];
         }
 
-        return ['success' => false, 'message' => 'Erro ao clonar repositório: ' . ($process->getErrorOutput() ?: $process->getOutput())];
+        return ['success' => false, 'message' => 'Erro ao clonar repositório: '.($process->getErrorOutput() ?: $process->getOutput())];
     }
 
     private function scaffoldLaravel(string $path): array
@@ -45,22 +45,22 @@ class ProjectScaffoldService
             return ['success' => true, 'message' => 'Projeto Laravel criado com sucesso!'];
         }
 
-        return ['success' => false, 'message' => 'Erro ao criar projeto Laravel: ' . ($process->getErrorOutput() ?: $process->getOutput())];
+        return ['success' => false, 'message' => 'Erro ao criar projeto Laravel: '.($process->getErrorOutput() ?: $process->getOutput())];
     }
 
     private function scaffoldWordPress(string $path): array
     {
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             File::makeDirectory($path, 0755, true);
         }
 
-        $zipPath = $path . '/wordpress.zip';
+        $zipPath = $path.'/wordpress.zip';
         $process = new Process(['powershell', '-Command', "Invoke-WebRequest -Uri 'https://wordpress.org/latest.zip' -OutFile '$zipPath'"]);
         $process->setTimeout(120);
         $process->run();
 
-        if (!$process->isSuccessful()) {
-            return ['success' => false, 'message' => 'Erro ao baixar WordPress: ' . ($process->getErrorOutput() ?: $process->getOutput())];
+        if (! $process->isSuccessful()) {
+            return ['success' => false, 'message' => 'Erro ao baixar WordPress: '.($process->getErrorOutput() ?: $process->getOutput())];
         }
 
         $extract = new Process(['powershell', '-Command', "Expand-Archive -Path '$zipPath' -DestinationPath '$path' -Force"]);
@@ -72,7 +72,7 @@ class ProjectScaffoldService
         if ($extract->isSuccessful()) {
             $wpFiles = File::glob("{$path}/wordpress/*");
             foreach ($wpFiles as $file) {
-                $dest = $path . '/' . basename($file);
+                $dest = $path.'/'.basename($file);
                 if (File::isDirectory($file)) {
                     File::moveDirectory($file, $dest, true);
                 } else {
@@ -82,6 +82,7 @@ class ProjectScaffoldService
             if (File::isDirectory("{$path}/wordpress")) {
                 File::deleteDirectory("{$path}/wordpress");
             }
+
             return ['success' => true, 'message' => 'WordPress baixado e extraído com sucesso!'];
         }
 
@@ -90,7 +91,7 @@ class ProjectScaffoldService
 
     private function scaffoldHtml(string $path): array
     {
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             File::makeDirectory($path, 0755, true);
         }
 
@@ -121,7 +122,7 @@ HTML;
 
     private function scaffoldPhp(string $path): array
     {
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             File::makeDirectory($path, 0755, true);
         }
 

@@ -13,7 +13,7 @@ class VirtualHostFactory extends Factory
     {
         return [
             'server_name' => fake()->unique()->domainName(),
-            'document_root' => 'D:/www/' . fake()->slug(),
+            'document_root' => 'D:/www/'.fake()->slug(),
             'ssl_enabled' => fake()->boolean(),
             'port' => fake()->randomElement([80, 8080]),
             'notes' => fake()->optional()->sentence(),

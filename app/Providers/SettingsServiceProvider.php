@@ -28,7 +28,7 @@ class SettingsServiceProvider extends ServiceProvider
             }
         } catch (\Throwable $e) {
             if ($this->app->runningInConsole()) {
-                $this->app->make('log')->warning('SettingsServiceProvider: nao foi possivel carregar configuracoes do banco: ' . $e->getMessage());
+                $this->app->make('log')->warning('SettingsServiceProvider: nao foi possivel carregar configuracoes do banco: '.$e->getMessage());
             }
         }
     }

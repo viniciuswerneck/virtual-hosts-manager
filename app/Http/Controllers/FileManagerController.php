@@ -13,17 +13,17 @@ class FileManagerController extends Controller
         $path = str_replace(['\\', '..'], '/', $path);
         $path = rtrim($path, '/');
 
-        if (!File::isDirectory($path)) {
+        if (! File::isDirectory($path)) {
             return redirect()->route('file-manager.index', ['path' => config('virtualhosts.default_document_root')])
                 ->with('error', 'Diretório não encontrado.');
         }
 
-        $items = collect(File::directories($path))->map(fn($d) => [
+        $items = collect(File::directories($path))->map(fn ($d) => [
             'name' => basename($d),
             'path' => $d,
             'type' => 'dir',
             'modified' => date('d/m/Y H:i', File::lastModified($d)),
-        ])->concat(collect(File::files($path))->map(fn($f) => [
+        ])->concat(collect(File::files($path))->map(fn ($f) => [
             'name' => $f->getFilename(),
             'path' => $f->getPathname(),
             'type' => 'file',
@@ -43,7 +43,7 @@ class FileManagerController extends Controller
     {
         $filePath = $request->input('file');
 
-        if (!$filePath || !File::exists($filePath) || File::isDirectory($filePath)) {
+        if (! $filePath || ! File::exists($filePath) || File::isDirectory($filePath)) {
             return redirect()->back()->with('error', 'Arquivo não encontrado.');
         }
 
@@ -51,7 +51,7 @@ class FileManagerController extends Controller
         $textExtensions = ['txt', 'md', 'php', 'html', 'css', 'js', 'json', 'xml', 'yml', 'yaml', 'env', 'gitignore', 'htaccess', 'conf', 'sql', 'sh', 'bat', 'ini', 'cfg'];
         $isText = in_array(strtolower($ext ?? ''), $textExtensions, true);
 
-        if (!$isText) {
+        if (! $isText) {
             return redirect()->back()->with('error', 'Visualização de arquivos binários não suportada.');
         }
 
@@ -70,7 +70,8 @@ class FileManagerController extends Controller
             $bytes /= 1024;
             $i++;
         }
-        return round($bytes, $i > 0 ? 1 : 0) . ' ' . $units[$i];
+
+        return round($bytes, $i > 0 ? 1 : 0).' '.$units[$i];
     }
 
     private function breadcrumbs(string $path): array
@@ -79,10 +80,13 @@ class FileManagerController extends Controller
         $crumbs = [];
         $current = '';
         foreach ($parts as $part) {
-            if ($part === '') continue;
-            $current .= '/' . $part;
+            if ($part === '') {
+                continue;
+            }
+            $current .= '/'.$part;
             $crumbs[] = ['name' => $part, 'path' => $current];
         }
+
         return $crumbs;
     }
 }

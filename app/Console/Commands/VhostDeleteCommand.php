@@ -11,6 +11,7 @@ use Illuminate\Console\Command;
 class VhostDeleteCommand extends Command
 {
     protected $signature = 'vhost:delete {name? : Nome do servidor para remover}';
+
     protected $description = 'Remove um virtual host';
 
     public function handle(
@@ -19,34 +20,36 @@ class VhostDeleteCommand extends Command
         VhostManagerService $manager,
     ): int {
         $name = $this->argument('name');
-        if (!$name) {
+        if (! $name) {
             $name = $this->ask('Nome do servidor para remover');
         }
 
         $vhost = VirtualHost::where('server_name', $name)->first();
 
-        if (!$vhost) {
+        if (! $vhost) {
             $this->error("Virtual host '{$name}' não encontrado.");
+
             return Command::FAILURE;
         }
 
-        if (!$this->confirm("Remover '{$name}'? Isso vai deletar o hosts, certificado SSL e config do Apache.", false)) {
+        if (! $this->confirm("Remover '{$name}'? Isso vai deletar o hosts, certificado SSL e config do Apache.", false)) {
             $this->info('Operação cancelada.');
+
             return Command::SUCCESS;
         }
 
         try {
-            $this->task("Removendo entrada do hosts", function () use ($hosts, $name) {
+            $this->task('Removendo entrada do hosts', function () use ($hosts, $name) {
                 $hosts->removeEntry($name);
             });
 
-            $this->task("Removendo certificado SSL", function () use ($mkcert, $name) {
+            $this->task('Removendo certificado SSL', function () use ($mkcert, $name) {
                 $mkcert->delete($name);
             });
 
             $vhost->delete();
 
-            $this->task("Reaplicando config do Apache", function () use ($manager) {
+            $this->task('Reaplicando config do Apache', function () use ($manager) {
                 $manager->applyApacheConfig();
             });
 
@@ -55,7 +58,8 @@ class VhostDeleteCommand extends Command
 
             return Command::SUCCESS;
         } catch (\Throwable $e) {
-            $this->error("Erro: " . $e->getMessage());
+            $this->error('Erro: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

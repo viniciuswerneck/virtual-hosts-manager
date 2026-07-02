@@ -8,8 +8,11 @@ use Throwable;
 class ApacheService
 {
     private string $vhostsFile;
+
     private string $apacheBin;
+
     private string $apacheService;
+
     private int $sslPort;
 
     public function __construct()
@@ -27,7 +30,7 @@ class ApacheService
 
     public function parseExisting(): array
     {
-        if (!File::exists($this->vhostsFile)) {
+        if (! File::exists($this->vhostsFile)) {
             return [];
         }
 
@@ -38,7 +41,7 @@ class ApacheService
         if (preg_match_all($pattern, $content, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
                 $name = $match[2];
-                if (!isset($vhosts[$name])) {
+                if (! isset($vhosts[$name])) {
                     $vhosts[$name] = [
                         'server_name' => $name,
                         'document_root' => $match[3],
@@ -104,7 +107,7 @@ class ApacheService
         $lines[] = '';
 
         foreach ($vhosts as $vhost) {
-            if (isset($vhost['active']) && !$vhost['active']) {
+            if (isset($vhost['active']) && ! $vhost['active']) {
                 continue;
             }
 
@@ -142,7 +145,7 @@ class ApacheService
                 $certFile = "{$certDir}/{$safeName}.pem";
                 $keyFile = "{$certDir}/{$safeName}-key.pem";
 
-                if (!File::exists($certFile) || !File::exists($keyFile)) {
+                if (! File::exists($certFile) || ! File::exists($keyFile)) {
                     continue;
                 }
 
@@ -168,8 +171,8 @@ class ApacheService
             File::put($this->vhostsFile, implode("\n", $lines));
         } catch (Throwable $e) {
             throw new \RuntimeException(
-                "Permissão negada ao escrever no Apache config ({$this->vhostsFile}).\n" .
-                "Execute o fix-permissions.bat como Administrador para liberar as permissões."
+                "Permissão negada ao escrever no Apache config ({$this->vhostsFile}).\n".
+                'Execute o fix-permissions.bat como Administrador para liberar as permissões.'
             );
         }
     }
@@ -191,10 +194,10 @@ class ApacheService
 
             // Se httpd -k restart falhou, tenta via serviço
             $stopOutput = $this->safeRunShell("net stop {$this->apacheService}", 15);
-            if ($stopOutput !== null && !$this->isAccessDenied($stopOutput)) {
+            if ($stopOutput !== null && ! $this->isAccessDenied($stopOutput)) {
                 $this->waitForNotRunning(5);
                 $startOutput = $this->safeRunShell("net start {$this->apacheService}", 15);
-                if ($startOutput && !$this->isAccessDenied($startOutput)) {
+                if ($startOutput && ! $this->isAccessDenied($startOutput)) {
                     if ($this->waitForRunning(10)) {
                         return ['success' => true, 'output' => "Apache reiniciado via serviço {$this->apacheService}."];
                     }
@@ -208,7 +211,7 @@ class ApacheService
             }
 
             // Último recurso: taskkill + iniciar direto
-            $this->safeRunShell("taskkill /F /IM httpd.exe", 5);
+            $this->safeRunShell('taskkill /F /IM httpd.exe', 5);
             $this->waitForNotRunning(5);
             $this->runApacheBackground();
             if ($this->waitForRunning(10)) {
@@ -217,13 +220,13 @@ class ApacheService
 
             return [
                 'success' => false,
-                'output' => 'Falha ao reiniciar Apache. Execute como Administrador: net stop ' . $this->apacheService . ' && net start ' . $this->apacheService,
+                'output' => 'Falha ao reiniciar Apache. Execute como Administrador: net stop '.$this->apacheService.' && net start '.$this->apacheService,
             ];
         }
 
         // 2. Apache não está rodando — tenta iniciar
         $startOutput = $this->safeRunShell("net start {$this->apacheService}", 15);
-        if ($startOutput && !$this->isAccessDenied($startOutput)) {
+        if ($startOutput && ! $this->isAccessDenied($startOutput)) {
             if ($this->waitForRunning(10)) {
                 return ['success' => true, 'output' => "Apache iniciado via serviço {$this->apacheService}."];
             }
@@ -243,7 +246,7 @@ class ApacheService
 
         return [
             'success' => false,
-            'output' => 'Falha ao iniciar Apache. Execute como Administrador no PowerShell: net start ' . $this->apacheService,
+            'output' => 'Falha ao iniciar Apache. Execute como Administrador no PowerShell: net start '.$this->apacheService,
         ];
     }
 
@@ -272,7 +275,7 @@ class ApacheService
             if ($outputStr && $this->isAccessDenied($outputStr)) {
                 return null;
             }
-        } catch (\Throwable) {
+        } catch (Throwable) {
         }
 
         return null;
@@ -282,9 +285,10 @@ class ApacheService
     {
         try {
             set_time_limit($timeout + 10);
-            exec($command . ' 2>&1', $output, $exitCode);
+            exec($command.' 2>&1', $output, $exitCode);
+
             return $output ? implode("\n", $output) : null;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
     }
@@ -292,15 +296,17 @@ class ApacheService
     private function runApacheBackground(): ?string
     {
         try {
-            $shell = new \COM("WScript.Shell");
+            $shell = new \COM('WScript.Shell');
             $shell->Run($this->apacheBin, 0, false);
+
             return null;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             try {
                 $cmd = sprintf('start "" /B "%s" 2>&1', $this->apacheBin);
                 exec($cmd, $output, $exitCode);
+
                 return $output ? implode("\n", $output) : null;
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 return null;
             }
         }
@@ -315,6 +321,7 @@ class ApacheService
             }
             usleep(200000);
         }
+
         return $this->isRunning();
     }
 
@@ -322,12 +329,13 @@ class ApacheService
     {
         $deadline = microtime(true) + $timeoutSeconds;
         while (microtime(true) < $deadline) {
-            if (!$this->isRunning()) {
+            if (! $this->isRunning()) {
                 return true;
             }
             usleep(200000);
         }
-        return !$this->isRunning();
+
+        return ! $this->isRunning();
     }
 
     public function isRunning(): bool
@@ -338,12 +346,14 @@ class ApacheService
                 return true;
             }
         }
+
         return false;
     }
 
     private function tasklist(): array
     {
         @exec('tasklist /NH /FI "IMAGENAME eq httpd.exe" 2>&1', $output, $exitCode);
+
         return $exitCode === 0 ? array_filter($output) : [];
     }
 

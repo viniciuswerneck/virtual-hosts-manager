@@ -40,7 +40,7 @@ class ApacheLogController extends Controller
         $search = $request->input('search', '');
         $lines = (int) $request->input('lines', 200);
 
-        if (!$logPath || !File::exists($logPath)) {
+        if (! $logPath || ! File::exists($logPath)) {
             return response()->json(['entries' => [], 'error' => 'Log file not found']);
         }
 
@@ -63,17 +63,17 @@ class ApacheLogController extends Controller
         foreach ($formats as $fmt) {
             $dt = \DateTime::createFromFormat($fmt, $raw);
             if ($dt) {
-                $now = new \DateTime();
+                $now = new \DateTime;
                 $diff = $now->getTimestamp() - $dt->getTimestamp();
 
                 if ($diff < 300) {
                     $display = 'Agora';
                 } elseif ($diff < 3600) {
-                    $display = 'Há ' . floor($diff / 60) . 'min';
+                    $display = 'Há '.floor($diff / 60).'min';
                 } elseif ($dt->format('Y-m-d') === $now->format('Y-m-d')) {
-                    $display = 'Hoje ' . $dt->format('H:i');
+                    $display = 'Hoje '.$dt->format('H:i');
                 } elseif ($dt->format('Y-m-d') === $now->modify('-1 day')->format('Y-m-d')) {
-                    $display = 'Ontem ' . $dt->format('H:i');
+                    $display = 'Ontem '.$dt->format('H:i');
                 } else {
                     $display = $dt->format('d/m/Y H:i');
                 }
@@ -145,7 +145,7 @@ class ApacheLogController extends Controller
                 continue;
             }
 
-            if ($search && !str_contains(strtolower($trimmed), strtolower($search))) {
+            if ($search && ! str_contains(strtolower($trimmed), strtolower($search))) {
                 continue;
             }
 

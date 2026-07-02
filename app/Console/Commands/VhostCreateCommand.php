@@ -29,25 +29,25 @@ class VhostCreateCommand extends Command
         ProjectScaffoldService $scaffold,
     ): int {
         $name = $this->argument('name');
-        if (!$name) {
+        if (! $name) {
             $name = $this->ask('Nome do servidor (ex: meusite.local)');
         }
 
         $dir = $this->option('dir');
-        if (!$dir) {
-            $dir = $this->ask('Diretório raiz', config('virtualhosts.default_document_root') . $name);
+        if (! $dir) {
+            $dir = $this->ask('Diretório raiz', config('virtualhosts.default_document_root').$name);
         }
 
         $port = (int) $this->option('port');
         $sslEnabled = true;
         if ($this->option('no-ssl')) {
             $sslEnabled = false;
-        } elseif (!$this->option('ssl')) {
+        } elseif (! $this->option('ssl')) {
             $sslEnabled = $this->confirm('Habilitar SSL (HTTPS)?', true);
         }
 
         $template = $this->option('template');
-        if (!$template && !$this->option('github')) {
+        if (! $template && ! $this->option('github')) {
             $template = $this->choice('Template do projeto (opcional)', ['nenhum', 'laravel', 'wordpress', 'html', 'php'], 'nenhum');
             if ($template === 'nenhum') {
                 $template = null;
@@ -58,6 +58,7 @@ class VhostCreateCommand extends Command
 
         if (VirtualHost::where('server_name', $name)->exists()) {
             $this->error("O virtual host '{$name}' já existe!");
+
             return Command::FAILURE;
         }
 
@@ -65,9 +66,10 @@ class VhostCreateCommand extends Command
             if ($template || $githubUrl) {
                 $this->task("Criando scaffold do projeto em {$dir}", function () use ($scaffold, $template, $dir, $githubUrl) {
                     $result = $scaffold->scaffold($template ?? 'html', $dir, $githubUrl);
-                    if (!$result['success']) {
+                    if (! $result['success']) {
                         throw new \RuntimeException($result['message']);
                     }
+
                     return true;
                 });
             }
@@ -82,31 +84,32 @@ class VhostCreateCommand extends Command
                 'active' => true,
             ]);
 
-            $this->task("Adicionando entrada no arquivo hosts", function () use ($hosts, $name) {
+            $this->task('Adicionando entrada no arquivo hosts', function () use ($hosts, $name) {
                 $hosts->addEntry($name);
             });
 
             if ($sslEnabled) {
-                $this->task("Gerando certificado SSL", function () use ($mkcert, $name) {
+                $this->task('Gerando certificado SSL', function () use ($mkcert, $name) {
                     $result = $mkcert->generate($name);
-                    if (!$result['success']) {
-                        throw new \RuntimeException('Erro ao gerar SSL: ' . ($result['output'] ?? ''));
+                    if (! $result['success']) {
+                        throw new \RuntimeException('Erro ao gerar SSL: '.($result['output'] ?? ''));
                     }
                 });
             }
 
-            $this->task("Aplicando config no Apache", function () use ($manager) {
+            $this->task('Aplicando config no Apache', function () use ($manager) {
                 $manager->applyApacheConfig();
             });
 
             $this->newLine();
             $this->info("✓ Virtual host '{$name}' criado com sucesso!");
             $this->line("  Diretório: {$dir}");
-            $this->line("  URL: " . ($sslEnabled ? 'https' : 'http') . "://{$name}");
+            $this->line('  URL: '.($sslEnabled ? 'https' : 'http')."://{$name}");
 
             return Command::SUCCESS;
         } catch (\Throwable $e) {
-            $this->error("Erro: " . $e->getMessage());
+            $this->error('Erro: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

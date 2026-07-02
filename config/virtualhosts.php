@@ -15,4 +15,6 @@ return [
     'phpmyadmin_user' => env('PHPMYADMIN_USER', 'root'),
     'phpmyadmin_password' => env('PHPMYADMIN_PASSWORD', ''),
     'vscode_executable' => env('VSCODE_EXECUTABLE', 'code'),
+    'php_ini_file' => env('PHP_INI_FILE', 'C:/php/php.ini'),
+    'httpd_conf_file' => env('HTTPD_CONF_FILE', 'C:/Apache24/conf/httpd.conf'),
 ];

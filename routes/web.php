@@ -2,14 +2,18 @@
 
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ApacheLogController;
+use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileManagerController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\VirtualHostController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/admin/logout', function (\Illuminate\Http\Request $request) {
+Route::post('/admin/logout', function (Request $request) {
     $request->session()->forget('admin_authenticated');
+
     return redirect()->route('admin.login');
 })->name('admin.logout');
 
@@ -17,18 +21,20 @@ Route::get('/admin/login', function () {
     if (session('admin_authenticated')) {
         return redirect()->route('dashboard');
     }
+
     return view('auth.login');
 })->name('admin.login');
 
-Route::post('/admin/login', function (\Illuminate\Http\Request $request) {
+Route::post('/admin/login', function (Request $request) {
     $password = config('app.admin_password');
 
     if (empty($password)) {
         return redirect()->route('dashboard');
     }
 
-    if (\Illuminate\Support\Facades\Hash::check($request->input('password'), $password)) {
+    if (Hash::check($request->input('password'), $password)) {
         $request->session()->put('admin_authenticated', true);
+
         return redirect()->intended(route('dashboard'));
     }
 
@@ -70,4 +76,14 @@ Route::middleware(['admin.auth'])->group(function () {
 
     Route::get('/files', [FileManagerController::class, 'index'])->name('file-manager.index');
     Route::get('/files/show', [FileManagerController::class, 'show'])->name('file-manager.show');
+
+    Route::get('/config/php', [ConfigController::class, 'phpIndex'])->name('config.php.index');
+    Route::post('/config/php', [ConfigController::class, 'phpUpdate'])->name('config.php.update');
+    Route::post('/config/php/extension-toggle', [ConfigController::class, 'phpExtensionToggle'])->name('config.php.extension-toggle');
+
+    Route::get('/config/apache', [ConfigController::class, 'apacheIndex'])->name('config.apache.index');
+    Route::post('/config/apache', [ConfigController::class, 'apacheUpdate'])->name('config.apache.update');
+    Route::post('/config/apache/module-toggle', [ConfigController::class, 'apacheToggleModule'])->name('config.apache.module-toggle');
+    Route::post('/config/apache/test', [ConfigController::class, 'apacheTest'])->name('config.apache.test');
+    Route::post('/config/apache/restart', [ConfigController::class, 'apacheRestart'])->name('config.apache.restart');
 });

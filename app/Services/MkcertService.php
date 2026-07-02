@@ -8,7 +8,9 @@ use Symfony\Component\Process\Process;
 class MkcertService
 {
     private string $mkcertBin;
+
     private string $certDir;
+
     private string $caRoot;
 
     public function __construct()

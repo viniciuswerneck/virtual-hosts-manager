@@ -25,6 +25,8 @@ class SettingsController extends Controller
             'phpmyadmin_user' => config('virtualhosts.phpmyadmin_user'),
             'phpmyadmin_password' => config('virtualhosts.phpmyadmin_password'),
             'vscode_executable' => config('virtualhosts.vscode_executable'),
+            'php_ini_file' => config('virtualhosts.php_ini_file'),
+            'httpd_conf_file' => config('virtualhosts.httpd_conf_file'),
         ];
 
         foreach ($config as $key => $value) {
@@ -43,6 +45,7 @@ class SettingsController extends Controller
             'apache_error_log',
             'hosts_file', 'mkcert_bin', 'mkcert_dir', 'default_document_root',
             'phpmyadmin_url', 'phpmyadmin_user', 'phpmyadmin_password', 'vscode_executable',
+            'php_ini_file', 'httpd_conf_file',
         ];
 
         $rules = [];

@@ -18,7 +18,11 @@ class DashboardController extends Controller
         $inactiveCount = VirtualHost::where('active', false)->count();
 
         $apacheOnline = Cache::remember('apache_running', 10, function () use ($apache) {
-            try { return $apache->isRunning(); } catch (\Throwable) { return false; }
+            try {
+                return $apache->isRunning();
+            } catch (\Throwable) {
+                return false;
+            }
         });
 
         $recentVhosts = VirtualHost::orderBy('created_at', 'desc')->take(5)->get();
@@ -26,13 +30,13 @@ class DashboardController extends Controller
 
         $certDir = config('virtualhosts.mkcert_dir');
         $sslWithoutCert = VirtualHost::where('ssl_enabled', true)->get()->filter(function ($v) use ($certDir) {
-            return !File::exists("{$certDir}/{$v->server_name}.pem");
+            return ! File::exists("{$certDir}/{$v->server_name}.pem");
         });
 
         $apacheVhosts = $apache->parseExisting();
         $apacheNames = array_column($apacheVhosts, 'server_name');
         $notInApache = VirtualHost::where('active', true)->get()->filter(function ($v) use ($apacheNames) {
-            return !in_array($v->server_name, $apacheNames);
+            return ! in_array($v->server_name, $apacheNames);
         });
 
         $apacheConfigTest = $apache->testConfig();
@@ -78,6 +82,7 @@ class DashboardController extends Controller
                     $count++;
                 }
             }
+
             return $count;
         } catch (\Throwable) {
             return 0;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreVirtualHostRequest;
+use App\Models\Setting;
 use App\Models\VirtualHost;
 use App\Services\ActivityLogService;
 use App\Services\ApacheService;
@@ -19,11 +20,11 @@ use ZipArchive;
 
 class VirtualHostController extends Controller
 {
-    public function index(ApacheService $apache, \Illuminate\Http\Request $request)
+    public function index(ApacheService $apache, Request $request)
     {
         $search = $request->input('search');
 
-        $vhosts = VirtualHost::when($search, fn($q) => $q->where('server_name', 'like', "%{$search}%")
+        $vhosts = VirtualHost::when($search, fn ($q) => $q->where('server_name', 'like', "%{$search}%")
             ->orWhere('document_root', 'like', "%{$search}%")
             ->orWhere('notes', 'like', "%{$search}%"))
             ->orderBy('server_name')
@@ -82,10 +83,10 @@ class VirtualHostController extends Controller
             $hosts->addEntry($serverName);
             $hostEntryAdded = true;
 
-            if (($data['ssl_enabled'] ?? true) && !$mkcert->certExists($serverName)) {
+            if (($data['ssl_enabled'] ?? true) && ! $mkcert->certExists($serverName)) {
                 $result = $mkcert->generate($serverName);
-                if (!$result['success']) {
-                    throw new RuntimeException('Erro ao gerar certificado SSL: ' . ($result['output'] ?? 'erro desconhecido'));
+                if (! $result['success']) {
+                    throw new RuntimeException('Erro ao gerar certificado SSL: '.($result['output'] ?? 'erro desconhecido'));
                 }
                 $certGenerated = true;
             }
@@ -96,7 +97,7 @@ class VirtualHostController extends Controller
 
             $msg = "Virtual host {$serverName} criado com sucesso!";
             if ($scaffolded) {
-                $msg .= " Projeto scaffolded no diretório.";
+                $msg .= ' Projeto scaffolded no diretório.';
             }
 
             return redirect()->route('virtual-hosts.index')
@@ -114,6 +115,7 @@ class VirtualHostController extends Controller
                 } catch (\Throwable) {
                 }
             }
+
             return redirect()->back()
                 ->withInput()
                 ->with('error', $e->getMessage());
@@ -148,7 +150,7 @@ class VirtualHostController extends Controller
                 }
             }
 
-            if ($sslEnabled && !$mkcert->certExists($newName)) {
+            if ($sslEnabled && ! $mkcert->certExists($newName)) {
                 $mkcert->generate($newName);
             }
 
@@ -196,7 +198,7 @@ class VirtualHostController extends Controller
     public function toggleActive(VirtualHost $virtualHost, VhostManagerService $manager, ApacheService $apache, ActivityLogService $logger)
     {
         $wasActive = $virtualHost->active;
-        $virtualHost->update(['active' => !$wasActive]);
+        $virtualHost->update(['active' => ! $wasActive]);
 
         $configWritten = false;
         $apacheRestarted = false;
@@ -214,8 +216,9 @@ class VirtualHostController extends Controller
         $status = $virtualHost->active ? 'ativado' : 'desativado';
         $logger->log('toggled', "Virtual host {$virtualHost->server_name} {$status}", $virtualHost);
 
-        if (!$configWritten || !$apacheRestarted) {
+        if (! $configWritten || ! $apacheRestarted) {
             $service = config('virtualhosts.apache_service');
+
             return redirect()->back()
                 ->with('warning', "Vhost {$status} no banco, mas o Apache precisa ser reiniciado para aplicar as mudanças.|{$result['message']}<br><br>Execute no PowerShell como Administrador:<br><code>net stop {$service} && net start {$service}</code>");
         }
@@ -229,7 +232,7 @@ class VirtualHostController extends Controller
         $ids = $request->input('ids', []);
         $action = $request->input('action'); // 'activate' or 'deactivate'
 
-        if (empty($ids) || !in_array($action, ['activate', 'deactivate'])) {
+        if (empty($ids) || ! in_array($action, ['activate', 'deactivate'])) {
             return redirect()->back()->with('error', 'Selecione pelo menos um vhost.');
         }
 
@@ -242,14 +245,15 @@ class VirtualHostController extends Controller
                 $vhost = VirtualHost::find($id);
                 if ($vhost && $vhost->active !== $active) {
                     $vhost->update(['active' => $active]);
-                    $logger->log('batch_' . $action, "Virtual host {$vhost->server_name} " . ($active ? 'ativado' : 'desativado') . ' (lote)', $vhost);
+                    $logger->log('batch_'.$action, "Virtual host {$vhost->server_name} ".($active ? 'ativado' : 'desativado').' (lote)', $vhost);
                     $count++;
                 }
             }
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Erro ao processar operação em lote: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Erro ao processar operação em lote: '.$e->getMessage());
         }
 
         if ($count === 0) {
@@ -263,6 +267,7 @@ class VirtualHostController extends Controller
         }
 
         $statusLabel = $active ? 'ativado' : 'desativado';
+
         return redirect()->back()
             ->with($result['type'], "{$count} vhost(s) {$statusLabel} em lote!|{$result['message']}");
     }
@@ -282,7 +287,9 @@ class VirtualHostController extends Controller
         try {
             foreach ($ids as $id) {
                 $vhost = VirtualHost::find($id);
-                if (!$vhost) continue;
+                if (! $vhost) {
+                    continue;
+                }
 
                 try {
                     $hosts->removeEntry($vhost->server_name);
@@ -301,7 +308,8 @@ class VirtualHostController extends Controller
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Erro ao excluir em lote: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Erro ao excluir em lote: '.$e->getMessage());
         }
 
         try {
@@ -316,9 +324,10 @@ class VirtualHostController extends Controller
     public function exportJson()
     {
         $vhosts = VirtualHost::orderBy('server_name')->get(['server_name', 'document_root', 'ssl_enabled', 'port', 'active', 'template', 'php_version', 'notes', 'github_url']);
+
         return response()->streamDownload(function () use ($vhosts) {
             echo $vhosts->toJson(JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        }, 'virtual-hosts-backup-' . date('Y-m-d-His') . '.json', ['Content-Type' => 'application/json']);
+        }, 'virtual-hosts-backup-'.date('Y-m-d-His').'.json', ['Content-Type' => 'application/json']);
     }
 
     public function importJson(Request $request, VhostManagerService $manager, ActivityLogService $logger)
@@ -328,13 +337,15 @@ class VirtualHostController extends Controller
         $content = File::get($request->file('backup_file'));
         $data = json_decode($content, true);
 
-        if (!is_array($data) || empty($data)) {
+        if (! is_array($data) || empty($data)) {
             return redirect()->back()->with('error', 'Arquivo JSON inválido ou vazio.');
         }
 
         $imported = 0;
         foreach ($data as $item) {
-            if (empty($item['server_name'])) continue;
+            if (empty($item['server_name'])) {
+                continue;
+            }
 
             try {
                 VirtualHost::firstOrCreate(
@@ -367,14 +378,14 @@ class VirtualHostController extends Controller
 
     public function exportFullBackup(ActivityLogService $logger)
     {
-        $tempDir = storage_path('app/backup-temp-' . date('YmdHis'));
+        $tempDir = storage_path('app/backup-temp-'.date('YmdHis'));
         File::ensureDirectoryExists($tempDir);
 
         try {
             $vhosts = VirtualHost::all()->toArray();
             File::put("{$tempDir}/vhosts.json", json_encode($vhosts, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
-            $settings = \App\Models\Setting::all()->toArray();
+            $settings = Setting::all()->toArray();
             File::put("{$tempDir}/settings.json", json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
             $mkcertDir = config('virtualhosts.mkcert_dir');
@@ -399,8 +410,8 @@ class VirtualHostController extends Controller
                 File::copy($apacheConfig, "{$tempDir}/httpd-vhosts.conf");
             }
 
-            $zipPath = storage_path('app/backup-' . date('Y-m-d-His') . '.zip');
-            $zip = new ZipArchive();
+            $zipPath = storage_path('app/backup-'.date('Y-m-d-His').'.zip');
+            $zip = new ZipArchive;
             if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
                 throw new RuntimeException('Erro ao criar arquivo ZIP.');
             }
@@ -419,7 +430,8 @@ class VirtualHostController extends Controller
             return response()->download($zipPath)->deleteFileAfterSend(true);
         } catch (\Throwable $e) {
             File::deleteDirectory($tempDir);
-            return redirect()->back()->with('error', 'Erro ao exportar backup: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Erro ao exportar backup: '.$e->getMessage());
         }
     }
 
@@ -427,11 +439,11 @@ class VirtualHostController extends Controller
     {
         $request->validate(['backup_file' => 'required|file|mimes:zip|max:51200']);
 
-        $tempDir = storage_path('app/backup-restore-' . date('YmdHis'));
+        $tempDir = storage_path('app/backup-restore-'.date('YmdHis'));
         File::ensureDirectoryExists($tempDir);
 
         try {
-            $zip = new ZipArchive();
+            $zip = new ZipArchive;
             if ($zip->open($request->file('backup_file')) !== true) {
                 throw new RuntimeException('Erro ao abrir arquivo ZIP.');
             }
@@ -444,7 +456,9 @@ class VirtualHostController extends Controller
                 $data = json_decode(File::get($vhostsFile), true);
                 if (is_array($data)) {
                     foreach ($data as $item) {
-                        if (empty($item['server_name'])) continue;
+                        if (empty($item['server_name'])) {
+                            continue;
+                        }
                         try {
                             VirtualHost::updateOrCreate(
                                 ['server_name' => $item['server_name']],
@@ -471,9 +485,11 @@ class VirtualHostController extends Controller
                 $data = json_decode(File::get($settingsFile), true);
                 if (is_array($data)) {
                     foreach ($data as $item) {
-                        if (empty($item['key'])) continue;
+                        if (empty($item['key'])) {
+                            continue;
+                        }
                         try {
-                            \App\Models\Setting::updateOrCreate(
+                            Setting::updateOrCreate(
                                 ['key' => $item['key']],
                                 ['value' => $item['value'] ?? '']
                             );
@@ -486,7 +502,7 @@ class VirtualHostController extends Controller
             $certsDir = "{$tempDir}/certs";
             if (File::isDirectory($certsDir)) {
                 $mkcertDir = config('virtualhosts.mkcert_dir');
-                if (!File::isDirectory($mkcertDir)) {
+                if (! File::isDirectory($mkcertDir)) {
                     File::ensureDirectoryExists($mkcertDir);
                 }
                 foreach (File::files($certsDir) as $file) {
@@ -507,9 +523,11 @@ class VirtualHostController extends Controller
                     $backupLines = explode("\n", $backupHosts);
                     foreach ($backupLines as $line) {
                         $line = trim($line);
-                        if (empty($line) || str_starts_with($line, '#')) continue;
-                        if (!in_array($line, $existingLines)) {
-                            $existingHosts .= "\n" . $line;
+                        if (empty($line) || str_starts_with($line, '#')) {
+                            continue;
+                        }
+                        if (! in_array($line, $existingLines)) {
+                            $existingHosts .= "\n".$line;
                         }
                     }
                     File::put($hostsFile, $existingHosts);
@@ -525,7 +543,8 @@ class VirtualHostController extends Controller
                 ->with('success', "Backup restaurado com sucesso! {$imported} vhosts importados.");
         } catch (\Throwable $e) {
             File::deleteDirectory($tempDir);
-            return redirect()->back()->with('error', 'Erro ao restaurar backup: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Erro ao restaurar backup: '.$e->getMessage());
         }
     }
 
@@ -549,14 +568,15 @@ class VirtualHostController extends Controller
             $apache->writeConfig($allVhosts);
         } catch (\Throwable $e) {
             return redirect()->route('virtual-hosts.index')
-                ->with('error', 'Erro ao reescrever config do Apache: ' . $e->getMessage());
+                ->with('error', 'Erro ao reescrever config do Apache: '.$e->getMessage());
         }
 
         $test = $apache->testConfig();
-        if (!$test['success']) {
+        if (! $test['success']) {
             Cache::forget('apache_running');
+
             return redirect()->route('virtual-hosts.index')
-                ->with('error', 'Erro de sintaxe no Apache: ' . $test['output']);
+                ->with('error', 'Erro de sintaxe no Apache: '.$test['output']);
         }
 
         $result = $apache->restart();
@@ -581,11 +601,12 @@ class VirtualHostController extends Controller
 
         if ($result['success']) {
             $logger->log('cert_regenerated', "Certificado SSL para {$name} regenerado", $virtualHost);
+
             return redirect()->route('virtual-hosts.index')
                 ->with('success', "Certificado SSL para {$name} regenerado com sucesso!");
         }
 
         return redirect()->route('virtual-hosts.index')
-            ->with('error', 'Erro ao gerar certificado: ' . $result['output']);
+            ->with('error', 'Erro ao gerar certificado: '.$result['output']);
     }
 }

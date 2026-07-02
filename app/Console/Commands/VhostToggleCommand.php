@@ -9,28 +9,30 @@ use Illuminate\Console\Command;
 class VhostToggleCommand extends Command
 {
     protected $signature = 'vhost:toggle {name? : Nome do servidor para ativar/desativar}';
+
     protected $description = 'Ativa ou desativa um virtual host';
 
     public function handle(VhostManagerService $manager): int
     {
         $name = $this->argument('name');
-        if (!$name) {
+        if (! $name) {
             $name = $this->ask('Nome do servidor');
         }
 
         $vhost = VirtualHost::where('server_name', $name)->first();
 
-        if (!$vhost) {
+        if (! $vhost) {
             $this->error("Virtual host '{$name}' não encontrado.");
+
             return Command::FAILURE;
         }
 
-        $vhost->update(['active' => !$vhost->active]);
+        $vhost->update(['active' => ! $vhost->active]);
 
         try {
             $manager->applyApacheConfig();
         } catch (\Throwable $e) {
-            $this->warn("Aviso: " . $e->getMessage());
+            $this->warn('Aviso: '.$e->getMessage());
         }
 
         $status = $vhost->active ? 'ativado' : 'desativado';

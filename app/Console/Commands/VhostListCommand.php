@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 class VhostListCommand extends Command
 {
     protected $signature = 'vhost:list {--search= : Filtrar por nome ou diretório}';
+
     protected $description = 'Lista todos os virtual hosts cadastrados';
 
     public function handle(): int
@@ -17,7 +18,7 @@ class VhostListCommand extends Command
         if ($search = $this->option('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('server_name', 'like', "%{$search}%")
-                  ->orWhere('document_root', 'like', "%{$search}%");
+                    ->orWhere('document_root', 'like', "%{$search}%");
             });
         }
 
@@ -25,11 +26,12 @@ class VhostListCommand extends Command
 
         if ($vhosts->isEmpty()) {
             $this->info('Nenhum virtual host cadastrado.');
+
             return Command::SUCCESS;
         }
 
         $headers = ['Nome', 'Diretório', 'Porta', 'SSL', 'Ativo', 'Template'];
-        $rows = $vhosts->map(fn($v) => [
+        $rows = $vhosts->map(fn ($v) => [
             $v->server_name,
             $v->document_root,
             $v->port,

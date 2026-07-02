@@ -4,7 +4,6 @@ namespace Tests\Unit;
 
 use App\Models\VirtualHost;
 use App\Services\ApacheService;
-use App\Services\HostsFileService;
 use App\Services\MkcertService;
 use App\Services\VhostManagerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -82,7 +81,7 @@ class VhostManagerServiceTest extends TestCase
     {
         VirtualHost::factory()->create(['server_name' => 'test.local', 'document_root' => 'D:/www/test', 'ssl_enabled' => true]);
 
-        $certDir = sys_get_temp_dir() . '/mkcert_test_' . uniqid();
+        $certDir = sys_get_temp_dir().'/mkcert_test_'.uniqid();
         File::makeDirectory($certDir, 0777, true, true);
         File::put("{$certDir}/test.local.pem", 'fake-cert');
         File::put("{$certDir}/test.local-key.pem", 'fake-key');

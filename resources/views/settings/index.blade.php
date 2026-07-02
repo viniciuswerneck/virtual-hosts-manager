@@ -19,9 +19,11 @@
         'phpmyadmin_user' => 'root',
         'phpmyadmin_password' => '',
         'vscode_executable' => 'code',
+        'php_ini_file' => 'C:/php/php.ini',
+        'httpd_conf_file' => 'C:/Apache24/conf/httpd.conf',
     ];
 
-    $pathChecks = ['apache_vhosts_file', 'apache_bin', 'apache_error_log', 'hosts_file', 'mkcert_bin', 'mkcert_dir', 'default_document_root'];
+    $pathChecks = ['apache_vhosts_file', 'apache_bin', 'apache_error_log', 'hosts_file', 'mkcert_bin', 'mkcert_dir', 'default_document_root', 'php_ini_file', 'httpd_conf_file'];
     $exists = [];
     foreach ($pathChecks as $key) {
         $val = $config[$key] ?? '';
@@ -150,6 +152,24 @@
                             <button type="button" onclick="restore('default_document_root', '{{ $defaults['default_document_root'] }}')" class="btn-ghost btn-xs p-1.5" title="Restaurar padrão">↩</button>
                         </div>
                         <p class="text-xs text-gray-400 mt-1.5">Usado como valor padrão ao criar novo host. Ex: D:/www/</p>
+                    </div>
+                    <div>
+                        <label class="label" for="php_ini_file"><i class="fab fa-php mr-1.5 text-gray-400"></i>php.ini</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="text" name="php_ini_file" id="php_ini_file" value="{{ old('php_ini_file', $config['php_ini_file']) }}" class="input flex-1 font-mono text-xs">
+                            <span class="shrink-0 text-sm">{{ $exists['php_ini_file'] ?? false ? '✅' : ($exists['php_ini_file'] ?? true ? '—' : '❌') }}</span>
+                            <button type="button" onclick="restore('php_ini_file', '{{ $defaults['php_ini_file'] }}')" class="btn-ghost btn-xs p-1.5" title="Restaurar padrão">↩</button>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1.5">Arquivo de configuração do PHP. Ex: C:/php/php.ini</p>
+                    </div>
+                    <div>
+                        <label class="label" for="httpd_conf_file"><i class="fas fa-server mr-1.5 text-gray-400"></i>httpd.conf</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="text" name="httpd_conf_file" id="httpd_conf_file" value="{{ old('httpd_conf_file', $config['httpd_conf_file']) }}" class="input flex-1 font-mono text-xs">
+                            <span class="shrink-0 text-sm">{{ $exists['httpd_conf_file'] ?? false ? '✅' : ($exists['httpd_conf_file'] ?? true ? '—' : '❌') }}</span>
+                            <button type="button" onclick="restore('httpd_conf_file', '{{ $defaults['httpd_conf_file'] }}')" class="btn-ghost btn-xs p-1.5" title="Restaurar padrão">↩</button>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1.5">Arquivo de configuração principal do Apache. Ex: C:/Apache24/conf/httpd.conf</p>
                     </div>
                 </div>
             </div>
