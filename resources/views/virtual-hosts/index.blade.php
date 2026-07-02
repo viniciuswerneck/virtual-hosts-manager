@@ -25,6 +25,16 @@
                     <input type="file" name="backup_file" accept=".json" class="hidden" onchange="this.form.submit()">
                 </label>
             </form>
+            <a href="{{ route('backup.export') }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-archive"></i> Backup
+            </a>
+            <form action="{{ route('backup.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <label class="btn btn-secondary btn-sm cursor-pointer">
+                    <i class="fas fa-file-import"></i> Restore
+                    <input type="file" name="backup_file" accept=".zip" class="hidden" onchange="this.form.submit()">
+                </label>
+            </form>
             <a href="{{ route('virtual-hosts.create') }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-plus-circle"></i> Novo Virtual Host
             </a>
@@ -78,11 +88,36 @@
         </div>
     @endif
 
+    <div id="batch-bar" class="hidden mb-4 flex items-center gap-3 p-3 rounded-xl bg-blue-50/80 border border-blue-200/60 dark:bg-blue-950/20 dark:border-blue-800/30">
+        <span class="text-sm text-blue-700 dark:text-blue-300" id="batch-count">0</span>
+        <span class="text-sm text-blue-700 dark:text-blue-300">selecionado(s)</span>
+        <div class="flex gap-2 ml-auto">
+            <button type="button" onclick="batchAction('activate')" class="btn btn-primary btn-xs">
+                <i class="fas fa-check-circle"></i> Ativar
+            </button>
+            <button type="button" onclick="batchAction('deactivate')" class="btn btn-secondary btn-xs">
+                <i class="fas fa-pause-circle"></i> Desativar
+            </button>
+            <button type="button" onclick="batchAction('delete')" class="btn btn-danger btn-xs">
+                <i class="fas fa-trash-alt"></i> Excluir
+            </button>
+        </div>
+    </div>
+
+    <form id="batch-form" method="POST" style="display:none">
+        @csrf
+        <input type="hidden" name="action" id="batch-action-input">
+        <div id="batch-ids-container"></div>
+    </form>
+
     <div class="card overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
                     <tr class="bg-gray-50/80 dark:bg-gray-800/80 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <th class="text-left px-4 py-3.5 w-10">
+                            <input type="checkbox" id="select-all" onchange="toggleAll(this)" class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500">
+                        </th>
                         <th class="text-left px-4 py-3.5"><i class="fas fa-server mr-1.5"></i>Servidor</th>
                         <th class="text-left px-4 py-3.5"><i class="fas fa-folder mr-1.5"></i>Diretório Raiz</th>
                         <th class="text-center px-4 py-3.5"><i class="fas fa-lock mr-1.5"></i>SSL</th>
@@ -96,6 +131,10 @@
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700/50">
                     @forelse ($vhosts as $vhost)
                         <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors {{ !$vhost->active ? 'opacity-50' : '' }}">
+                            <td class="px-4 py-3.5">
+                                <input type="checkbox" class="batch-checkbox rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                                       value="{{ $vhost->id }}" onchange="updateBatchBar()">
+                            </td>
                             <td class="px-4 py-3.5 font-medium">
                                 <div class="flex items-center gap-2.5">
                                     <span class="w-2 h-2 rounded-full shrink-0 {{ $vhost->active ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
@@ -188,7 +227,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-12 text-center">
+                            <td colspan="9" class="px-4 py-12 text-center">
                                 <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100 text-gray-400 mb-3 dark:bg-gray-700">
                                     <i class="fas fa-globe text-xl"></i>
                                 </div>
@@ -207,4 +246,44 @@
     <div class="mt-5">
         {{ $vhosts->links() }}
     </div>
+
+    <script>
+        function toggleAll(master) {
+            document.querySelectorAll('.batch-checkbox').forEach(function(cb) {
+                cb.checked = master.checked;
+            });
+            updateBatchBar();
+        }
+        function updateBatchBar() {
+            var checked = document.querySelectorAll('.batch-checkbox:checked');
+            var bar = document.getElementById('batch-bar');
+            if (checked.length === 0) {
+                bar.classList.add('hidden');
+                return;
+            }
+            bar.classList.remove('hidden');
+            document.getElementById('batch-count').textContent = checked.length;
+        }
+        function batchAction(action) {
+            if (!confirm('Tem certeza que deseja ' + (action === 'activate' ? 'ativar' : action === 'deactivate' ? 'desativar' : 'excluir') + ' os vhosts selecionados?')) return;
+            var checked = document.querySelectorAll('.batch-checkbox:checked');
+            var container = document.getElementById('batch-ids-container');
+            container.innerHTML = '';
+            checked.forEach(function(cb) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ids[]';
+                input.value = cb.value;
+                container.appendChild(input);
+            });
+            var form = document.getElementById('batch-form');
+            document.getElementById('batch-action-input').value = action;
+            if (action === 'delete') {
+                form.action = '{{ route('virtual-hosts.batch.delete') }}';
+            } else {
+                form.action = '{{ route('virtual-hosts.batch.toggle') }}';
+            }
+            form.submit();
+        }
+    </script>
 @endsection

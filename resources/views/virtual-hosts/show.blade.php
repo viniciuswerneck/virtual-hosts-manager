@@ -114,6 +114,12 @@
                     <td class="px-5 py-3.5"><span class="badge-gray">{{ ucfirst($virtualHost->template) }}</span></td>
                 </tr>
                 @endif
+                @if ($virtualHost->php_version)
+                <tr>
+                    <th class="bg-gray-50/80 dark:bg-gray-800/80 text-left px-5 py-3.5 font-medium text-gray-600 dark:text-gray-400"><i class="fab fa-php mr-2 text-gray-400"></i>PHP</th>
+                    <td class="px-5 py-3.5"><span class="badge-blue">PHP {{ $virtualHost->php_version }}</span></td>
+                </tr>
+                @endif
                 @if ($virtualHost->github_url)
                 <tr>
                     <th class="bg-gray-50/80 dark:bg-gray-800/80 text-left px-5 py-3.5 font-medium text-gray-600 dark:text-gray-400"><i class="fab fa-github mr-2 text-gray-400"></i>GitHub</th>

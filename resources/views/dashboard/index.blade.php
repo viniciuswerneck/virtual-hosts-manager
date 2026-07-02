@@ -167,12 +167,37 @@
                     <i class="fas fa-file-alt text-lg"></i>
                     <span>Logs Apache</span>
                 </a>
-                @php $phpmyadmin = config('virtualhosts.phpmyadmin_url'); @endphp
+                <a href="{{ route('activity-logs.index') }}"
+                   class="flex items-center gap-3 rounded-xl bg-gradient-to-br from-teal-50 to-teal-50/50 text-teal-700 p-4 text-sm font-medium hover:from-teal-100 hover:to-teal-50 transition-all duration-150 ring-1 ring-teal-600/5 dark:from-teal-950/30 dark:to-teal-950/10 dark:text-teal-400 dark:ring-teal-400/10 dark:hover:from-teal-950/50">
+                    <i class="fas fa-history text-lg"></i>
+                    <span>Histórico</span>
+                </a>
+                <a href="{{ route('file-manager.index') }}"
+                   class="flex items-center gap-3 rounded-xl bg-gradient-to-br from-cyan-50 to-cyan-50/50 text-cyan-700 p-4 text-sm font-medium hover:from-cyan-100 hover:to-cyan-50 transition-all duration-150 ring-1 ring-cyan-600/5 dark:from-cyan-950/30 dark:to-cyan-950/10 dark:text-cyan-400 dark:ring-cyan-400/10 dark:hover:from-cyan-950/50">
+                    <i class="fas fa-folder-open text-lg"></i>
+                    <span>Arquivos</span>
+                </a>
+                @php
+                    $phpmyadmin = config('virtualhosts.phpmyadmin_url');
+                    $pmaUser = config('virtualhosts.phpmyadmin_user');
+                    $pmaPass = config('virtualhosts.phpmyadmin_password');
+                    $pmaAutoUrl = $phpmyadmin;
+                    if ($pmaUser) {
+                        $pmaAutoUrl .= (str_contains($phpmyadmin, '?') ? '&' : '?') . 'username=' . urlencode($pmaUser);
+                        if ($pmaPass) {
+                            $pmaAutoUrl .= '&password=' . urlencode($pmaPass);
+                        }
+                    }
+                @endphp
                 @if ($phpmyadmin)
-                    <a href="{{ $phpmyadmin }}" target="_blank"
-                       class="flex items-center gap-3 rounded-xl bg-gradient-to-br from-purple-50 to-purple-50/50 text-purple-700 p-4 text-sm font-medium hover:from-purple-100 hover:to-purple-50 transition-all duration-150 ring-1 ring-purple-600/5 dark:from-purple-950/30 dark:to-purple-950/10 dark:text-purple-400 dark:ring-purple-400/10 dark:hover:from-purple-950/50">
+                    <a href="{{ $pmaAutoUrl }}" target="_blank"
+                       class="flex items-center gap-3 rounded-xl bg-gradient-to-br from-purple-50 to-purple-50/50 text-purple-700 p-4 text-sm font-medium hover:from-purple-100 hover:to-purple-50 transition-all duration-150 ring-1 ring-purple-600/5 dark:from-purple-950/30 dark:to-purple-950/10 dark:text-purple-400 dark:ring-purple-400/10 dark:hover:from-purple-950/50"
+                       title="Clique para abrir com login automático">
                         <i class="fas fa-database text-lg"></i>
                         <span>phpMyAdmin</span>
+                        @if ($pmaUser)
+                            <span class="text-xs opacity-60 hidden sm:inline">({{ $pmaUser }})</span>
+                        @endif
                     </a>
                 @endif
             </div>

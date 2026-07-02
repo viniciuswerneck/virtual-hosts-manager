@@ -59,6 +59,19 @@
                 <p class="text-xs text-gray-400 mt-1.5">Escolha um template para iniciar o projeto automaticamente no diretório. Se preencher o GitHub, o template é ignorado.</p>
             </div>
 
+            <div>
+                <label class="label" for="php_version"><i class="fab fa-php mr-1.5 text-gray-400"></i>Versão do PHP</label>
+                <select name="php_version" id="php_version" class="input">
+                    <option value="" {{ !old('php_version') ? 'selected' : '' }}>Padrão do Apache</option>
+                    <option value="8.0" {{ old('php_version') === '8.0' ? 'selected' : '' }}>PHP 8.0</option>
+                    <option value="8.1" {{ old('php_version') === '8.1' ? 'selected' : '' }}>PHP 8.1</option>
+                    <option value="8.2" {{ old('php_version') === '8.2' ? 'selected' : '' }}>PHP 8.2</option>
+                    <option value="8.3" {{ old('php_version') === '8.3' ? 'selected' : '' }}>PHP 8.3</option>
+                    <option value="8.4" {{ old('php_version') === '8.4' ? 'selected' : '' }}>PHP 8.4</option>
+                </select>
+                <p class="text-xs text-gray-400 mt-1.5">Define o handler FCGID no Apache. Deixe como "Padrão" para usar a versão configurada globalmente.</p>
+            </div>
+
             <div class="flex items-center gap-3">
                 <button type="button" onclick="this.previousElementSibling.previousElementSibling.click()"
                         class="toggle {{ old('ssl_enabled', true) ? 'toggle-on' : 'toggle-off' }}">

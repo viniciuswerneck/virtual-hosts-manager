@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ApacheLogController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FileManagerController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\VirtualHostController;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +51,7 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
 
     Route::get('/logs', [ApacheLogController::class, 'index'])->name('logs.index');
+    Route::get('/logs/stream', [ApacheLogController::class, 'stream'])->name('logs.stream');
 
     Route::get('/sync-apache', [VirtualHostController::class, 'sync'])->name('virtual-hosts.sync');
     Route::post('/restart-apache', [VirtualHostController::class, 'restartApache'])->name('virtual-hosts.restart');
@@ -56,4 +59,15 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/virtual-hosts/{virtual_host}/regenerate-cert', [VirtualHostController::class, 'regenerateCert'])->name('virtual-hosts.regenerate-cert');
     Route::get('/virtual-hosts/export/json', [VirtualHostController::class, 'exportJson'])->name('virtual-hosts.export');
     Route::post('/virtual-hosts/import/json', [VirtualHostController::class, 'importJson'])->name('virtual-hosts.import');
+
+    Route::post('/virtual-hosts/batch/toggle', [VirtualHostController::class, 'batchToggle'])->name('virtual-hosts.batch.toggle');
+    Route::post('/virtual-hosts/batch/delete', [VirtualHostController::class, 'batchDelete'])->name('virtual-hosts.batch.delete');
+
+    Route::get('/backup/export', [VirtualHostController::class, 'exportFullBackup'])->name('backup.export');
+    Route::post('/backup/import', [VirtualHostController::class, 'importFullBackup'])->name('backup.import');
+
+    Route::get('/audit-log', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+    Route::get('/files', [FileManagerController::class, 'index'])->name('file-manager.index');
+    Route::get('/files/show', [FileManagerController::class, 'show'])->name('file-manager.show');
 });

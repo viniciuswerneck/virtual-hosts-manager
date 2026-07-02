@@ -16,6 +16,7 @@ class VirtualHost extends Model
         'port',
         'active',
         'template',
+        'php_version',
         'notes',
         'github_url',
     ];

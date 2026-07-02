@@ -64,6 +64,16 @@
                         <i class="fas fa-plus-circle text-sm"></i>
                         <span class="hidden sm:inline">Novo</span>
                     </a>
+                    <a href="{{ route('activity-logs.index') }}"
+                       class="nav-link {{ request()->routeIs('activity-logs.*') ? 'nav-link-active' : 'text-gray-600 dark:text-gray-300' }}">
+                        <i class="fas fa-history text-sm"></i>
+                        <span class="hidden sm:inline">Auditoria</span>
+                    </a>
+                    <a href="{{ route('file-manager.index') }}"
+                       class="nav-link {{ request()->routeIs('file-manager.*') ? 'nav-link-active' : 'text-gray-600 dark:text-gray-300' }}">
+                        <i class="fas fa-folder-open text-sm"></i>
+                        <span class="hidden sm:inline">Arquivos</span>
+                    </a>
                     <a href="{{ route('logs.index') }}"
                        class="nav-link {{ request()->routeIs('logs.*') ? 'nav-link-active' : 'text-gray-600 dark:text-gray-300' }}">
                         <i class="fas fa-file-alt text-sm"></i>

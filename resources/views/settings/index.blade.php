@@ -16,6 +16,8 @@
         'mkcert_dir' => 'C:/mkcert',
         'default_document_root' => 'D:/www/',
         'phpmyadmin_url' => '',
+        'phpmyadmin_user' => 'root',
+        'phpmyadmin_password' => '',
         'vscode_executable' => 'code',
     ];
 
@@ -166,6 +168,16 @@
                             <button type="button" onclick="restore('phpmyadmin_url', '')" class="btn-ghost btn-xs p-1.5" title="Limpar">↩</button>
                         </div>
                         <p class="text-xs text-gray-400 mt-1.5">Usado para atalho rápido no dashboard.</p>
+                    </div>
+                    <div>
+                        <label class="label" for="phpmyadmin_user"><i class="fas fa-user mr-1.5 text-gray-400"></i>Usuário phpMyAdmin</label>
+                        <input type="text" name="phpmyadmin_user" id="phpmyadmin_user" value="{{ old('phpmyadmin_user', $config['phpmyadmin_user'] ?? 'root') }}" class="input flex-1 font-mono text-xs" placeholder="root">
+                        <p class="text-xs text-gray-400 mt-1.5">Usado para auto-login no phpMyAdmin.</p>
+                    </div>
+                    <div>
+                        <label class="label" for="phpmyadmin_password"><i class="fas fa-lock mr-1.5 text-gray-400"></i>Senha phpMyAdmin</label>
+                        <input type="password" name="phpmyadmin_password" id="phpmyadmin_password" value="{{ old('phpmyadmin_password', $config['phpmyadmin_password'] ?? '') }}" class="input flex-1 font-mono text-xs" placeholder="Deixe em branco se não houver senha">
+                        <p class="text-xs text-gray-400 mt-1.5">Usado para auto-login no phpMyAdmin.</p>
                     </div>
                     <div>
                         <label class="label" for="vscode_executable"><i class="fas fa-code mr-1.5 text-gray-400"></i>Comando VS Code</label>

@@ -12,5 +12,7 @@ return [
     'apache_error_log' => env('APACHE_ERROR_LOG', 'C:/Apache24/logs/error.log'),
     'default_document_root' => env('DEFAULT_DOCUMENT_ROOT', 'D:/www/'),
     'phpmyadmin_url' => env('PHPMYADMIN_URL', ''),
+    'phpmyadmin_user' => env('PHPMYADMIN_USER', 'root'),
+    'phpmyadmin_password' => env('PHPMYADMIN_PASSWORD', ''),
     'vscode_executable' => env('VSCODE_EXECUTABLE', 'code'),
 ];

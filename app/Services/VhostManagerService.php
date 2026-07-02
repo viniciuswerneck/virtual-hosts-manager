@@ -17,7 +17,7 @@ class VhostManagerService
 
     public function applyApacheConfig(): array
     {
-        $allVhosts = VirtualHost::all(['server_name', 'document_root', 'ssl_enabled', 'port', 'active'])->toArray();
+        $allVhosts = VirtualHost::all(['server_name', 'document_root', 'ssl_enabled', 'port', 'active', 'php_version'])->toArray();
         $vhostsFile = $this->apache->getVhostsFile();
 
         $this->apache->writeConfig($allVhosts);

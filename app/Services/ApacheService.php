@@ -111,6 +111,7 @@ class ApacheService
             $name = $vhost['server_name'];
             $root = $vhost['document_root'];
             $port = $vhost['port'] ?? 80;
+            $phpVersion = $vhost['php_version'] ?? null;
 
             $lines[] = '# -----------------------------';
             $lines[] = "# {$name}";
@@ -119,6 +120,15 @@ class ApacheService
             $lines[] = "    ServerName {$name}";
             $lines[] = "    DocumentRoot \"{$root}\"";
             $lines[] = '';
+
+            if ($phpVersion) {
+                $phpVersionClean = str_replace('.', '', $phpVersion);
+                $lines[] = "    <FilesMatch \.php$>";
+                $lines[] = "        SetHandler \"fcgid://php-cgi{$phpVersionClean}/php-cgi.exe\"";
+                $lines[] = '    </FilesMatch>';
+                $lines[] = '';
+            }
+
             $lines[] = "    <Directory \"{$root}\">";
             $lines[] = '        AllowOverride All';
             $lines[] = '        Require all granted';

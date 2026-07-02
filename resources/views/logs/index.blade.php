@@ -11,6 +11,9 @@
             @endif
         </div>
         <div class="flex gap-2">
+            <button id="live-toggle" onclick="toggleLive()" class="btn btn-primary btn-sm">
+                <i class="fas fa-play"></i> <span>Auto-Refresh</span>
+            </button>
             <a href="{{ route('dashboard') }}" class="btn-secondary btn-sm">
                 <i class="fas fa-arrow-left"></i> Voltar
             </a>
@@ -29,10 +32,10 @@
         </div>
     @else
         <div class="card p-4 mb-6">
-            <form method="GET" action="{{ route('logs.index') }}" class="flex items-center gap-4 flex-wrap">
+            <form method="GET" action="{{ route('logs.index') }}" class="flex items-center gap-4 flex-wrap" id="log-filters">
                 <div class="flex items-center gap-2">
                     <label class="text-sm text-gray-600 dark:text-gray-400">Nível:</label>
-                    <select name="level" class="input py-1.5 w-auto" onchange="this.form.submit()">
+                    <select name="level" class="input py-1.5 w-auto" onchange="document.getElementById('log-filters').submit()">
                         @foreach ($levels as $l)
                             <option value="{{ $l }}" {{ $level === $l ? 'selected' : '' }}>{{ ucfirst($l) }}</option>
                         @endforeach
@@ -40,7 +43,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <label class="text-sm text-gray-600 dark:text-gray-400">Linhas:</label>
-                    <select name="lines" class="input py-1.5 w-auto" onchange="this.form.submit()">
+                    <select name="lines" class="input py-1.5 w-auto" onchange="document.getElementById('log-filters').submit()">
                         @foreach ([50, 100, 200, 500, 1000] as $n)
                             <option value="{{ $n }}" {{ (int) $lines === $n ? 'selected' : '' }}>{{ $n }}</option>
                         @endforeach
@@ -55,15 +58,73 @@
         <div class="rounded-xl overflow-hidden border border-gray-700/50 shadow-lg">
             <div class="px-4 py-2.5 bg-gray-800 dark:bg-gray-900 text-gray-400 text-xs flex items-center justify-between">
                 <span class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span id="live-indicator" class="w-2 h-2 rounded-full bg-emerald-500"></span>
                     <i class="fas fa-terminal mr-1"></i> Apache Error Log
+                    <span id="live-status" class="text-gray-500 ml-1"></span>
                 </span>
-                <button onclick="copyToClipboard(document.getElementById('log-content').textContent)"
-                        class="hover:text-white transition-colors flex items-center gap-1.5">
-                    <i class="fas fa-copy"></i> Copiar
-                </button>
+                <div class="flex items-center gap-3">
+                    <span id="log-timestamp" class="text-gray-500"></span>
+                    <button onclick="copyToClipboard(document.getElementById('log-content').textContent)"
+                            class="hover:text-white transition-colors flex items-center gap-1.5">
+                        <i class="fas fa-copy"></i> Copiar
+                    </button>
+                </div>
             </div>
             <pre id="log-content" class="p-4 text-sm font-mono text-emerald-400 bg-gray-950 overflow-x-auto max-h-[600px] overflow-y-auto leading-relaxed" style="white-space: pre-wrap; word-break: break-all;">{{ $logContent ?: 'Nenhuma entrada encontrada.' }}</pre>
         </div>
     @endif
+
+    <script>
+        var liveInterval = null;
+        var isLive = false;
+
+        function toggleLive() {
+            var btn = document.getElementById('live-toggle');
+            var indicator = document.getElementById('live-indicator');
+            var status = document.getElementById('live-status');
+
+            if (isLive) {
+                clearInterval(liveInterval);
+                liveInterval = null;
+                isLive = false;
+                btn.innerHTML = '<i class="fas fa-play"></i> Auto-Refresh';
+                btn.className = 'btn btn-primary btn-sm';
+                indicator.className = 'w-2 h-2 rounded-full bg-emerald-500';
+                status.textContent = '';
+                return;
+            }
+
+            isLive = true;
+            btn.innerHTML = '<i class="fas fa-stop"></i> Parar';
+            btn.className = 'btn btn-warning btn-sm';
+            indicator.className = 'w-2 h-2 rounded-full bg-green-400 animate-pulse';
+            status.textContent = 'AO VIVO';
+            fetchLogs();
+            liveInterval = setInterval(fetchLogs, 3000);
+        }
+
+        function fetchLogs() {
+            var params = new URLSearchParams();
+            var level = document.querySelector('select[name="level"]');
+            var lines = document.querySelector('select[name="lines"]');
+            if (level) params.set('level', level.value);
+            if (lines) params.set('lines', lines.value);
+
+            fetch('{{ route('logs.stream') }}?' + params.toString())
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.content !== undefined) {
+                        var pre = document.getElementById('log-content');
+                        pre.textContent = data.content || 'Nenhuma entrada encontrada.';
+                    }
+                    var ts = document.getElementById('log-timestamp');
+                    ts.textContent = new Date().toLocaleTimeString('pt-BR');
+                })
+                .catch(function() {});
+        }
+
+        window.addEventListener('beforeunload', function() {
+            if (liveInterval) clearInterval(liveInterval);
+        });
+    </script>
 @endsection

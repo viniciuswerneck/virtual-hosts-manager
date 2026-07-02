@@ -22,6 +22,8 @@ class SettingsController extends Controller
             'mkcert_dir' => config('virtualhosts.mkcert_dir'),
             'default_document_root' => config('virtualhosts.default_document_root'),
             'phpmyadmin_url' => config('virtualhosts.phpmyadmin_url'),
+            'phpmyadmin_user' => config('virtualhosts.phpmyadmin_user'),
+            'phpmyadmin_password' => config('virtualhosts.phpmyadmin_password'),
             'vscode_executable' => config('virtualhosts.vscode_executable'),
         ];
 
@@ -40,7 +42,7 @@ class SettingsController extends Controller
             'apache_vhosts_file', 'apache_bin', 'apache_service', 'apache_ssl_port',
             'apache_error_log',
             'hosts_file', 'mkcert_bin', 'mkcert_dir', 'default_document_root',
-            'phpmyadmin_url', 'vscode_executable',
+            'phpmyadmin_url', 'phpmyadmin_user', 'phpmyadmin_password', 'vscode_executable',
         ];
 
         $rules = [];
