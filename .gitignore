@@ -28,3 +28,4 @@ Thumbs.db
 nul
 /public/mkcert/rootCA-key.pem
 /storage/app/mkcert/
+/database/sqlite.db
