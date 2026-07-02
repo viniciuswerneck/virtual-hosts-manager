@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Setting;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 
 class SettingsServiceProvider extends ServiceProvider
@@ -19,7 +20,9 @@ class SettingsServiceProvider extends ServiceProvider
         }
 
         try {
-            $settings = Setting::pluck('value', 'key')->toArray();
+            $settings = Cache::remember('app_settings', 300, function () {
+                return Setting::pluck('value', 'key')->toArray();
+            });
 
             foreach ($settings as $key => $value) {
                 if (config()->has("virtualhosts.{$key}")) {

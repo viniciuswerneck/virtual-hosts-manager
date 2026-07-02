@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class SettingsController extends Controller
 {
     public function index()
     {
-        $settings = Setting::pluck('value', 'key')->toArray();
+        $settings = Cache::remember('app_settings_records', 300, function () {
+            return Setting::pluck('value', 'key')->toArray();
+        });
 
         $config = [
             'apache_vhosts_file' => config('virtualhosts.apache_vhosts_file'),
@@ -67,6 +70,9 @@ class SettingsController extends Controller
                 ['value' => $value]
             );
         }
+
+        Cache::forget('app_settings');
+        Cache::forget('app_settings_records');
 
         return redirect()->route('settings.index')
             ->with('success', __('Configurações salvas com sucesso!'));

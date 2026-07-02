@@ -62,6 +62,8 @@ class VhostManagerService
 
         Cache::forget('apache_running');
         Cache::forget('apache_config_test');
+        Cache::forget('apache_pid_count');
+        Cache::forget('apache_vhosts_parsed');
 
         try {
             $restart = $this->apache->restart();

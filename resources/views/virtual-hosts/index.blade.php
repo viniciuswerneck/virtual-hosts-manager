@@ -68,15 +68,11 @@
         (function () {
             var input = document.getElementById('search-input');
             var form = document.getElementById('search-form');
-            var timer;
             if (input && form) {
-                input.addEventListener('input', function () {
-                    clearTimeout(timer);
-                    timer = setTimeout(function () {
-                        if (input.value.length >= 2 || input.value === '') {
-                            form.submit();
-                        }
-                    }, 400);
+                input.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        form.submit();
+                    }
                 });
             }
         })();

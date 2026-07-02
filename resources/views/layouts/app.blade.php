@@ -7,7 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="alternate icon" href="/favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+    @if (\Illuminate\Support\Facades\Cache::remember('use_vite', 300, fn() => file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot'))))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @else
         <script>

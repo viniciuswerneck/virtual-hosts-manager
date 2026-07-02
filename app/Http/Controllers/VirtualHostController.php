@@ -31,13 +31,17 @@ class VirtualHostController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        $apacheVhosts = $apache->parseExisting();
+        $apacheVhosts = Cache::remember('apache_vhosts_parsed', 60, function () use ($apache) {
+            return $apache->parseExisting();
+        });
         $apacheNames = array_column($apacheVhosts, 'server_name');
 
         $certDir = config('virtualhosts.mkcert_dir');
         $certStatus = [];
         foreach ($vhosts as $v) {
-            $certStatus[$v->server_name] = File::exists("{$certDir}/{$v->server_name}.pem");
+            $certStatus[$v->server_name] = Cache::remember("cert_status_{$v->server_name}", 120, function () use ($certDir, $v) {
+                return File::exists("{$certDir}/{$v->server_name}.pem");
+            });
         }
 
         return view('virtual-hosts.index', compact('vhosts', 'apacheNames', 'search', 'certStatus'));
@@ -213,6 +217,8 @@ class VirtualHostController extends Controller
 
         Cache::forget('apache_running');
         Cache::forget('apache_config_test');
+        Cache::forget('apache_pid_count');
+        Cache::forget('apache_vhosts_parsed');
 
         $status = $virtualHost->active ? __('ativado') : __('desativado');
         $logger->log('toggled', "Virtual host {$virtualHost->server_name} {$status}", $virtualHost);
@@ -575,7 +581,9 @@ class VirtualHostController extends Controller
         $test = $apache->testConfig();
         if (! $test['success']) {
             Cache::forget('apache_running');
-        Cache::forget('apache_config_test');
+            Cache::forget('apache_config_test');
+            Cache::forget('apache_pid_count');
+            Cache::forget('apache_vhosts_parsed');
 
             return redirect()->route('virtual-hosts.index')
                 ->with('error', __('Erro de sintaxe no Apache: ') . $test['output']);
@@ -585,6 +593,8 @@ class VirtualHostController extends Controller
 
         Cache::forget('apache_running');
         Cache::forget('apache_config_test');
+        Cache::forget('apache_pid_count');
+        Cache::forget('apache_vhosts_parsed');
 
         $logger->log('restarted', __('Apache reiniciado'));
 

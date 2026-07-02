@@ -88,24 +88,42 @@ class ApacheLogController extends Controller
         return ['display' => $raw, 'tooltip' => $raw];
     }
 
-    private function parseLog(string $logPath, string $level, string $search, int $maxLines): array
+    private function tailFile(string $path, int $lines): array
     {
-        $content = File::get($logPath);
-        $rawLines = explode("\n", $content);
-        $rawLines = array_filter($rawLines);
-        $rawLines = array_reverse($rawLines);
+        if (! File::exists($path)) {
+            return [];
+        }
 
-        $entries = [];
-        $levelCounts = ['error' => 0, 'warn' => 0, 'notice' => 0, 'info' => 0, 'debug' => 0];
-        $moduleSet = [];
+        $file = new \SplFileObject($path, 'r');
+        $file->setFlags(\SplFileObject::READ_AHEAD | \SplFileObject::SKIP_EMPTY);
 
-        $pattern = '/^\[([^\]]+)\]\s+\[([^:]+):([^\]]+)\](?:\s+\[pid\s+([^\]]+)\])?(?:\s+\[client\s+([^\]]+)\])?\s+(.+)$/i';
+        $totalLines = 0;
+        try {
+            $file->seek(PHP_INT_MAX);
+            $totalLines = $file->key();
+        } catch (\Throwable) {
+            $totalLines = 0;
+        }
 
-        foreach ($rawLines as $raw) {
-            $trimmed = trim($raw);
-            if ($trimmed === '') {
-                continue;
+        $startLine = max(0, $totalLines - $lines);
+        $result = [];
+
+        if ($totalLines > 0) {
+            $file->seek($startLine);
+            while (! $file->eof()) {
+                $line = trim($file->fgets());
+                if ($line !== '') {
+                    $result[] = $line;
+                }
+                if (count($result) >= $lines) {
+                    break;
+                }
             }
+        }
+
+        return $result;
+    }
+}
 
             $parsed = null;
             $logLevel = 'info';

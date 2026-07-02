@@ -33,7 +33,9 @@ class DashboardController extends Controller
             return ! File::exists("{$certDir}/{$v->server_name}.pem");
         });
 
-        $apacheVhosts = $apache->parseExisting();
+        $apacheVhosts = Cache::remember('apache_vhosts_parsed', 60, function () use ($apache) {
+            return $apache->parseExisting();
+        });
         $apacheNames = array_column($apacheVhosts, 'server_name');
         $notInApache = VirtualHost::where('active', true)->get()->filter(function ($v) use ($apacheNames) {
             return ! in_array($v->server_name, $apacheNames);
@@ -42,7 +44,9 @@ class DashboardController extends Controller
         $apacheConfigTest = Cache::remember('apache_config_test', 60, function () use ($apache) {
             return $apache->testConfig();
         });
-        $apachePidCount = $apacheOnline ? $this->countApacheProcesses() : 0;
+        $apachePidCount = $apacheOnline ? Cache::remember('apache_pid_count', 60, function () {
+            return $this->countApacheProcesses();
+        }) : 0;
 
         $diskFree = disk_free_space('/');
         $diskTotal = disk_total_space('/');
