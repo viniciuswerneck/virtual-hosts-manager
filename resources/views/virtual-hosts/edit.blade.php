@@ -4,89 +4,108 @@
 
 @section('content')
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-edit text-indigo-600 mr-2"></i>Editar: {{ $virtualHost->server_name }}</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight"><i class="fas fa-edit text-blue-500 mr-2"></i>Editar: {{ $virtualHost->server_name }}</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Atualize as configurações do virtual host</p>
     </div>
 
-    <div class="bg-white rounded shadow p-6 max-w-2xl">
-        <form action="{{ route('virtual-hosts.update', $virtualHost) }}" method="POST">
+    <div class="card p-6 max-w-2xl">
+        <form action="{{ route('virtual-hosts.update', $virtualHost) }}" method="POST" class="space-y-5">
             @csrf
             @method('PUT')
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-server mr-1 text-gray-500"></i>Nome do Servidor</label>
-                <input type="text" name="server_name" value="{{ old('server_name', $virtualHost->server_name) }}"
-                       class="w-full border rounded px-3 py-2 text-sm bg-white @error('server_name') border-red-500 @enderror"
+            <div>
+                <label class="label" for="server_name"><i class="fas fa-server mr-1.5 text-gray-400"></i>Nome do Servidor</label>
+                <input type="text" name="server_name" id="server_name" value="{{ old('server_name', $virtualHost->server_name) }}"
+                       class="input {{ $errors->has('server_name') ? 'input-error' : '' }}"
                        placeholder="meusite.local">
                 @error('server_name')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-folder mr-1 text-gray-500"></i>Diretório Raiz</label>
-                <div class="flex gap-1">
+            <div>
+                <label class="label" for="document_root"><i class="fas fa-folder mr-1.5 text-gray-400"></i>Diretório Raiz</label>
+                <div class="flex gap-2">
                     <input type="text" name="document_root" id="document_root" value="{{ old('document_root', $virtualHost->document_root) }}"
-                           class="flex-1 border rounded px-3 py-2 text-sm bg-white @error('document_root') border-red-500 @enderror">
-                    <button type="button" onclick="openExplorer()" class="bg-gray-100 hover:bg-gray-200 border rounded px-3 text-gray-600" title="Abrir no Explorer">
+                           class="input flex-1 {{ $errors->has('document_root') ? 'input-error' : '' }}">
+                    <button type="button" onclick="openExplorer()" class="btn-secondary" title="Abrir no Explorer">
                         <i class="fas fa-folder-open"></i>
                     </button>
                 </div>
                 @error('document_root')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-plug mr-1 text-gray-500"></i>Porta</label>
-                <input type="number" name="port" value="{{ old('port', $virtualHost->port) }}"
-                       class="w-full border rounded px-3 py-2 text-sm bg-white @error('port') border-red-500 @enderror">
+            <div>
+                <label class="label" for="port"><i class="fas fa-plug mr-1.5 text-gray-400"></i>Porta</label>
+                <input type="number" name="port" id="port" value="{{ old('port', $virtualHost->port) }}"
+                       class="input {{ $errors->has('port') ? 'input-error' : '' }}">
                 @error('port')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div class="mb-4">
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" name="ssl_enabled" value="1"
-                           {{ old('ssl_enabled', $virtualHost->ssl_enabled) ? 'checked' : '' }}
-                           class="rounded border-gray-300">
-                    <span class="text-sm font-medium text-gray-700"><i class="fas fa-lock mr-1"></i>Habilitar SSL (HTTPS)</span>
-                </label>
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="this.previousElementSibling.previousElementSibling.click()"
+                        class="toggle {{ old('ssl_enabled', $virtualHost->ssl_enabled) ? 'toggle-on' : 'toggle-off' }}">
+                    <span class="toggle-dot"></span>
+                </button>
+                <input type="hidden" name="ssl_enabled" value="0">
+                <input type="checkbox" name="ssl_enabled" id="ssl_enabled" value="1"
+                       {{ old('ssl_enabled', $virtualHost->ssl_enabled) ? 'checked' : '' }}
+                       class="hidden" onchange="this.parentElement.querySelector('.toggle').className = 'toggle ' + (this.checked ? 'toggle-on' : 'toggle-off')">
+                <label for="ssl_enabled" class="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none"><i class="fas fa-lock mr-1.5 text-gray-400"></i>Habilitar SSL (HTTPS)</label>
             </div>
 
-            <div class="mb-4">
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" name="active" value="1"
-                           {{ old('active', $virtualHost->active) ? 'checked' : '' }}
-                           class="rounded border-gray-300">
-                    <span class="text-sm font-medium text-gray-700"><i class="fas fa-power-off mr-1"></i>Ativo</span>
-                </label>
-                <p class="text-gray-400 text-xs mt-1">Vhosts inativos são ignorados na configuração do Apache.</p>
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="this.previousElementSibling.previousElementSibling.click()"
+                        class="toggle {{ old('active', $virtualHost->active) ? 'toggle-on' : 'toggle-off' }}">
+                    <span class="toggle-dot"></span>
+                </button>
+                <input type="hidden" name="active" value="0">
+                <input type="checkbox" name="active" id="active" value="1"
+                       {{ old('active', $virtualHost->active) ? 'checked' : '' }}
+                       class="hidden" onchange="this.parentElement.querySelector('.toggle').className = 'toggle ' + (this.checked ? 'toggle-on' : 'toggle-off')">
+                <label for="active" class="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none"><i class="fas fa-power-off mr-1.5 text-gray-400"></i>Ativo</label>
             </div>
+            <p class="text-xs text-gray-400 mt-1.5 ml-11">Vhosts inativos são ignorados na configuração do Apache.</p>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fab fa-github mr-1 text-gray-500"></i>GitHub</label>
-                <input type="url" name="github_url" value="{{ old('github_url', $virtualHost->github_url) }}"
-                       class="w-full border rounded px-3 py-2 text-sm bg-white @error('github_url') border-red-500 @enderror"
+            <div>
+                <label class="label" for="github_url"><i class="fab fa-github mr-1.5 text-gray-400"></i>GitHub</label>
+                <input type="url" name="github_url" id="github_url" value="{{ old('github_url', $virtualHost->github_url) }}"
+                       class="input {{ $errors->has('github_url') ? 'input-error' : '' }}"
                        placeholder="https://github.com/usuario/repositorio">
                 @error('github_url')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-sticky-note mr-1 text-gray-500"></i>Observações</label>
-                <textarea name="notes" rows="2" class="w-full border rounded px-3 py-2 text-sm bg-white">{{ old('notes', $virtualHost->notes) }}</textarea>
+            <div>
+                <label class="label" for="notes"><i class="fas fa-sticky-note mr-1.5 text-gray-400"></i>Observações</label>
+                <textarea name="notes" id="notes" rows="2" class="input">{{ old('notes', $virtualHost->notes) }}</textarea>
             </div>
 
-            <div class="flex gap-2">
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded text-sm font-medium">
-                    <i class="fas fa-save mr-1"></i> Salvar Alterações
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> Salvar Alterações
                 </button>
-                <a href="{{ route('virtual-hosts.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm">
-                    <i class="fas fa-times mr-1"></i> Cancelar
+                <a href="{{ route('virtual-hosts.index') }}" class="btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
                 </a>
             </div>
         </form>
     </div>
+
+    <script>
+        document.querySelectorAll('.toggle').forEach(function(toggle) {
+            toggle.addEventListener('click', function() {
+                var checkbox = this.nextElementSibling;
+                if (checkbox && checkbox.type === 'checkbox') {
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+    </script>
 @endsection
