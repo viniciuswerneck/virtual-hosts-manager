@@ -1,22 +1,22 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard')
+@section('title', __('Dashboard'))
 
 @section('content')
     <div class="flex items-start justify-between mb-8 gap-4 flex-wrap">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Dashboard</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Visão geral dos seus virtual hosts</p>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{{ __('Dashboard') }}</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('Visão geral dos seus virtual hosts') }}</p>
         </div>
         <div class="flex gap-2 flex-wrap">
             <a href="{{ route('virtual-hosts.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus-circle"></i> Novo Virtual Host
+                <i class="fas fa-plus-circle"></i> {{ __('Novo Virtual Host') }}
             </a>
             <form action="{{ route('virtual-hosts.restart') }}" method="POST" class="restart-form"
-                  onsubmit="return confirm('Reiniciar o Apache agora?')">
+                  onsubmit="return confirm('{{ __("Reiniciar o Apache agora?") }}')">
                 @csrf
                 <button type="submit" class="btn btn-warning">
-                    <i class="fas fa-redo-alt"></i> Reiniciar Apache
+                    <i class="fas fa-redo-alt"></i> {{ __('Reiniciar Apache') }}
                 </button>
             </form>
         </div>
@@ -30,7 +30,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-gray-900 dark:text-gray-100 stat-count" data-target="{{ $totalVhosts }}">0</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ __('Total') }}</p>
                 </div>
             </div>
         </div>
@@ -41,7 +41,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-gray-900 dark:text-gray-100 stat-count" data-target="{{ $activeVhosts }}">0</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Ativos</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ __('Ativos') }}</p>
                 </div>
             </div>
             @if ($totalVhosts > 0)
@@ -60,7 +60,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-gray-900 dark:text-gray-100 stat-count" data-target="{{ $sslCount }}">0</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Com SSL</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ __('Com SSL') }}</p>
                 </div>
             </div>
             @if ($totalVhosts > 0)
@@ -78,12 +78,12 @@
                     <i class="fas {{ $apacheOnline ? 'fa-check-circle' : 'fa-exclamation-circle' }}"></i>
                 </div>
                 <div>
-                    <p class="text-xl font-bold {{ $apacheOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">{{ $apacheOnline ? 'Online' : 'Offline' }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Apache</p>
+                    <p class="text-xl font-bold {{ $apacheOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">{{ $apacheOnline ? __('Online') : __('Offline') }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ __('Apache') }}</p>
                 </div>
             </div>
             @if ($apacheOnline)
-                <p class="mt-1.5 text-xs text-gray-400 dark:text-gray-500 text-right">{{ $apachePidCount }} processo(s)</p>
+                <p class="mt-1.5 text-xs text-gray-400 dark:text-gray-500 text-right">{{ $apachePidCount }} {{ __('processo(s)') }}</p>
             @endif
         </div>
     </div>
@@ -96,7 +96,7 @@
                         <i class="fas fa-certificate text-xs"></i>
                     </span>
                     <div class="flex-1 text-sm text-amber-800 dark:text-amber-200">
-                        <span class="font-medium">{{ $sslWithoutCert->count() }} vhost(s)</span> com SSL ativado mas sem certificado:
+                        <span class="font-medium">{{ $sslWithoutCert->count() }} {{ __('vhost(s)') }}</span> {{ __('com SSL ativado mas sem certificado:') }}
                         @foreach ($sslWithoutCert as $v)
                             <a href="{{ route('virtual-hosts.show', $v) }}" class="underline font-medium hover:text-amber-900 dark:hover:text-amber-100">{{ $v->server_name }}</a>@if (!$loop->last), @endif
                         @endforeach
@@ -109,11 +109,11 @@
                         <i class="fas fa-sync-alt text-xs"></i>
                     </span>
                     <div class="flex-1 text-sm text-amber-800 dark:text-amber-200">
-                        <span class="font-medium">{{ $notInApache->count() }} vhost(s) ativos</span> não encontrados no Apache:
+                        <span class="font-medium">{{ $notInApache->count() }} {{ __('vhost(s) ativos') }}</span> {{ __('não encontrados no Apache:') }}
                         @foreach ($notInApache as $v)
                             <a href="{{ route('virtual-hosts.show', $v) }}" class="underline font-medium hover:text-amber-900 dark:hover:text-amber-100">{{ $v->server_name }}</a>@if (!$loop->last), @endif
                         @endforeach
-                        <a href="{{ route('virtual-hosts.sync') }}" class="ml-2 btn-secondary btn-xs">Sincronizar</a>
+                        <a href="{{ route('virtual-hosts.sync') }}" class="ml-2 btn-secondary btn-xs">{{ __('Sincronizar') }}</a>
                     </div>
                 </div>
             @endif
@@ -125,7 +125,7 @@
             <div class="card-header">
                 <h2 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                     <i class="fas fa-heartbeat text-rose-500"></i>
-                    Status do Sistema
+                    {{ __('Status do Sistema') }}
                 </h2>
             </div>
             <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
@@ -134,22 +134,22 @@
                         <i class="fab fa-php"></i>
                     </span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">PHP</p>
+                        <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">{{ __('PHP') }}</p>
                         <div class="space-y-1">
                             <div class="flex items-baseline justify-between gap-2">
-                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">Versão</span>
+                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">{{ __('Versão') }}</span>
                                 <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $phpVersion }}</span>
                             </div>
                             <div class="flex items-baseline justify-between gap-2">
-                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">Memory</span>
+                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">{{ __('Memory') }}</span>
                                 <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $phpMemoryLimit }}</span>
                             </div>
                             <div class="flex items-baseline justify-between gap-2">
-                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">Max Exec</span>
+                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">{{ __('Max Exec') }}</span>
                                 <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $phpMaxExecTime }}s</span>
                             </div>
                             <div class="flex items-baseline justify-between gap-2">
-                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">Upload</span>
+                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">{{ __('Upload') }}</span>
                                 <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $phpUploadMax }}</span>
                             </div>
                         </div>
@@ -160,7 +160,7 @@
                         <i class="fas fa-chart-pie"></i>
                     </span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">PHP nos Vhosts</p>
+                        <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">{{ __('PHP nos Vhosts') }}</p>
                         <div class="space-y-2">
                             @forelse ($phpVersionTotal as $pv)
                                 @php $pct = $totalVhosts > 0 ? round(($pv->total / $totalVhosts) * 100) : 0; @endphp
@@ -174,11 +174,11 @@
                                     </div>
                                 </div>
                             @empty
-                                <p class="text-sm text-gray-400 dark:text-gray-500">Nenhum vhost com PHP específico</p>
+                                <p class="text-sm text-gray-400 dark:text-gray-500">{{ __('Nenhum vhost com PHP específico') }}</p>
                             @endforelse
                             @if ($phpNullCount > 0)
                                 <div class="flex items-center justify-between text-sm pt-1.5 border-t border-gray-100 dark:border-gray-700">
-                                    <span class="text-gray-400 dark:text-gray-500">Padrão do Apache</span>
+                                    <span class="text-gray-400 dark:text-gray-500">{{ __('Padrão do Apache') }}</span>
                                     <span class="font-medium text-gray-500 dark:text-gray-400">{{ $phpNullCount }}</span>
                                 </div>
                             @endif
@@ -190,10 +190,10 @@
                         <i class="fas fa-server"></i>
                     </span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">Apache</p>
+                        <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">{{ __('Apache') }}</p>
                         <div class="space-y-1">
                             <div class="flex items-baseline justify-between gap-2">
-                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">Status</span>
+                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">{{ __('Status') }}</span>
                                 <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium {{ $apacheOnline ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400' }}">
                                     <span class="w-1.5 h-1.5 rounded-full {{ $apacheOnline ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
                                     {{ $apacheOnline ? 'Online' : 'Offline' }}
@@ -201,15 +201,15 @@
                             </div>
                             @if ($apacheOnline)
                                 <div class="flex items-baseline justify-between gap-2">
-                                    <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">Processos</span>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">{{ __('Processos') }}</span>
                                     <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $apachePidCount }}</span>
                                 </div>
                             @endif
                             <div class="flex items-baseline justify-between gap-2">
-                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">Config</span>
+                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">{{ __('Config') }}</span>
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium {{ $apacheConfigTest['success'] ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400' }}">
                                     <i class="fas {{ $apacheConfigTest['success'] ? 'fa-check' : 'fa-times' }}"></i>
-                                    {{ $apacheConfigTest['success'] ? 'OK' : 'Erro' }}
+                                    {{ $apacheConfigTest['success'] ? __('OK') : __('Erro') }}
                                 </span>
                             </div>
                         </div>
@@ -220,10 +220,10 @@
                         <i class="fas fa-hdd"></i>
                     </span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">Disco</p>
+                        <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-2">{{ __('Disco') }}</p>
                         <div class="text-sm">
                             <div class="flex items-baseline justify-between mb-1.5">
-                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">Uso</span>
+                                <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">{{ __('Uso') }}</span>
                                 <span class="font-medium text-gray-900 dark:text-gray-100">{{ $diskPercent }}%</span>
                             </div>
                             @php $diskColor = $diskPercent > 90 ? 'bg-red-500' : ($diskPercent > 70 ? 'bg-amber-500' : 'bg-emerald-500'); @endphp
@@ -231,8 +231,8 @@
                                 <div class="h-2 rounded-full transition-all duration-700 {{ $diskColor }}" style="width: {{ $diskPercent }}%"></div>
                             </div>
                             <div class="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                <span>{{ round($diskUsed / 1073741824, 1) }} GB usados</span>
-                                <span>{{ round($diskTotal / 1073741824, 1) }} GB total</span>
+                                <span>{{ round($diskUsed / 1073741824, 1) }} {{ __('GB usados') }}</span>
+                                <span>{{ round($diskTotal / 1073741824, 1) }} {{ __('GB total') }}</span>
                             </div>
                         </div>
                     </div>
@@ -244,16 +244,16 @@
             <div class="card-header flex items-center justify-between">
                 <h2 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                     <i class="fas fa-history text-emerald-500"></i>
-                    Atividades
+                    {{ __('Atividades') }}
                 </h2>
-                <a href="{{ route('activity-logs.index') }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">Ver todas</a>
+                <a href="{{ route('activity-logs.index') }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">{{ __('Ver todas') }}</a>
             </div>
             @if ($recentActivities->isEmpty())
                 <div class="px-6 py-12 text-center">
                     <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100 text-gray-400 mb-3 dark:bg-gray-700">
                         <i class="fas fa-history text-xl"></i>
                     </div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Nenhuma atividade registrada.</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Nenhuma atividade registrada.') }}</p>
                 </div>
             @else
                 <div class="px-5">
@@ -295,18 +295,18 @@
             <div class="card-header flex items-center justify-between">
                 <h2 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                     <i class="fas fa-clock text-blue-500"></i>
-                    Últimos Vhosts
+                    {{ __('Últimos Vhosts') }}
                 </h2>
-                <a href="{{ route('virtual-hosts.index') }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">Ver todos</a>
+                <a href="{{ route('virtual-hosts.index') }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">{{ __('Ver todos') }}</a>
             </div>
             @if ($recentVhosts->isEmpty())
                 <div class="px-6 py-12 text-center">
                     <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100 text-gray-400 mb-3 dark:bg-gray-700">
                         <i class="fas fa-globe text-xl"></i>
                     </div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Nenhum vhost cadastrado ainda.</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Nenhum vhost cadastrado ainda.') }}</p>
                     <a href="{{ route('virtual-hosts.create') }}" class="btn-primary btn-sm mt-3">
-                        <i class="fas fa-plus-circle"></i> Criar o primeiro
+                        <i class="fas fa-plus-circle"></i> {{ __('Criar o primeiro') }}
                     </a>
                 </div>
             @else
@@ -343,7 +343,7 @@
             <div class="card-header">
                 <h2 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                     <i class="fas fa-bolt text-amber-500"></i>
-                    Ações Rápidas
+                    {{ __('Ações Rápidas') }}
                 </h2>
             </div>
             <div class="p-4 grid grid-cols-2 gap-2">
@@ -352,64 +352,64 @@
                     <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300">
                         <i class="fas fa-plus-circle"></i>
                     </span>
-                    Novo Vhost
+                    {{ __('Novo Vhost') }}
                 </a>
                 <a href="{{ route('virtual-hosts.index') }}"
                    class="flex items-center gap-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3.5 text-sm font-medium text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all">
                     <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-50 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300">
                         <i class="fas fa-list"></i>
                     </span>
-                    Listar Vhosts
+                    {{ __('Listar Vhosts') }}
                 </a>
                 <a href="{{ route('virtual-hosts.sync') }}"
                    class="flex items-center gap-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3.5 text-sm font-medium text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all"
-                   onclick="return confirm('Importar todos os hosts do Apache para o banco?')">
+                   onclick="return confirm('{{ __("Importar todos os hosts do Apache para o banco?") }}')">
                     <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300">
                         <i class="fas fa-sync-alt"></i>
                     </span>
-                    Sincronizar
+                    {{ __('Sincronizar') }}
                 </a>
                 <a href="{{ route('settings.index') }}"
                    class="flex items-center gap-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3.5 text-sm font-medium text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all">
                     <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300">
                         <i class="fas fa-cog"></i>
                     </span>
-                    Configurações
+                    {{ __('Configurações') }}
                 </a>
                 <a href="{{ route('logs.index') }}"
                    class="flex items-center gap-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3.5 text-sm font-medium text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all">
                     <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-300">
                         <i class="fas fa-file-alt"></i>
                     </span>
-                    Logs Apache
+                    {{ __('Logs Apache') }}
                 </a>
                 <a href="{{ route('activity-logs.index') }}"
                    class="flex items-center gap-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3.5 text-sm font-medium text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all">
                     <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-teal-50 text-teal-600 dark:bg-teal-500/20 dark:text-teal-300">
                         <i class="fas fa-history"></i>
                     </span>
-                    Histórico
+                    {{ __('Histórico') }}
                 </a>
                  <a href="{{ route('file-manager.index') }}"
                    class="flex items-center gap-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3.5 text-sm font-medium text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all">
                      <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-300">
-                         <i class="fas fa-folder-open"></i>
-                     </span>
-                     Arquivos
+<i class="fas fa-folder-open"></i>
+                    </span>
+                    {{ __('Arquivos') }}
                  </a>
                  <a href="{{ route('config.php.index') }}"
                    class="flex items-center gap-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3.5 text-sm font-medium text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all">
                      <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300">
-                         <i class="fab fa-php"></i>
-                     </span>
-                     PHP.ini
+<i class="fab fa-php"></i>
+                    </span>
+                    {{ __('PHP.ini') }}
                  </a>
                  <a href="{{ route('config.apache.index') }}"
                    class="flex items-center gap-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-3.5 text-sm font-medium text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all">
                      <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300">
-                         <i class="fas fa-server"></i>
-                     </span>
-                     httpd.conf
+<i class="fas fa-server"></i>
+                    </span>
+                    {{ __('httpd.conf') }}
                  </a>
                  @php
                     $phpmyadmin = config('virtualhosts.phpmyadmin_url');
@@ -429,7 +429,7 @@
                         <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300">
                             <i class="fas fa-database"></i>
                         </span>
-                        phpMyAdmin
+                        {{ __('phpMyAdmin') }}
                         @if ($pmaUser)
                             <span class="text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">({{ $pmaUser }})</span>
                         @endif

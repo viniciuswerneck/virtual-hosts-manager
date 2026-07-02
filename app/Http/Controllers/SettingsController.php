@@ -69,6 +69,6 @@ class SettingsController extends Controller
         }
 
         return redirect()->route('settings.index')
-            ->with('success', 'Configurações salvas com sucesso!');
+            ->with('success', __('Configurações salvas com sucesso!'));
     }
 }

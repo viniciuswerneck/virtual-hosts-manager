@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Hosts Manager') - Gerenciador de Virtual Hosts</title>
+    <title>@yield('title', __('Hosts Manager')) - {{ __('Gerenciador de Virtual Hosts') }}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="alternate icon" href="/favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
@@ -101,20 +101,20 @@
     <div id="page-loader"><div class="loader-spinner"></div></div>
 
     @php
-        $apacheOnline = \Illuminate\Support\Facades\Cache::remember('apache_running', 10, function () {
+        $apacheOnline = \Illuminate\Support\Facades\Cache::remember('apache_running', 60, function () {
             try { return app(\App\Services\ApacheService::class)->isRunning(); } catch (\Throwable) { return false; }
         });
 
         $navItems = [
-            ['route' => 'dashboard', 'icon' => 'fas fa-tachometer-alt', 'label' => 'Dashboard', 'pattern' => 'dashboard'],
-            ['route' => 'virtual-hosts.index', 'icon' => 'fas fa-list', 'label' => 'Virtual Hosts', 'pattern' => 'virtual-hosts.index', 'exclude' => 'virtual-hosts.create'],
-            ['route' => 'virtual-hosts.create', 'icon' => 'fas fa-plus-circle', 'label' => 'Novo', 'pattern' => 'virtual-hosts.create'],
-            ['route' => 'file-manager.index', 'icon' => 'fas fa-folder-open', 'label' => 'Arquivos', 'pattern' => 'file-manager.*'],
-            ['route' => 'activity-logs.index', 'icon' => 'fas fa-history', 'label' => 'Auditoria', 'pattern' => 'activity-logs.*'],
-            ['route' => 'logs.index', 'icon' => 'fas fa-file-alt', 'label' => 'Logs', 'pattern' => 'logs.*'],
-            ['route' => 'config.php.index', 'icon' => 'fab fa-php', 'label' => 'PHP', 'pattern' => 'config.php.*'],
-            ['route' => 'config.apache.index', 'icon' => 'fas fa-server', 'label' => 'Apache', 'pattern' => 'config.apache.*'],
-            ['route' => 'settings.index', 'icon' => 'fas fa-cog', 'label' => 'Sistema', 'pattern' => 'settings.*'],
+            ['route' => 'dashboard', 'icon' => 'fas fa-tachometer-alt', 'label' => __('Dashboard'), 'pattern' => 'dashboard'],
+            ['route' => 'virtual-hosts.index', 'icon' => 'fas fa-list', 'label' => __('Virtual Hosts'), 'pattern' => 'virtual-hosts.index', 'exclude' => 'virtual-hosts.create'],
+            ['route' => 'virtual-hosts.create', 'icon' => 'fas fa-plus-circle', 'label' => __('Novo'), 'pattern' => 'virtual-hosts.create'],
+            ['route' => 'file-manager.index', 'icon' => 'fas fa-folder-open', 'label' => __('Arquivos'), 'pattern' => 'file-manager.*'],
+            ['route' => 'activity-logs.index', 'icon' => 'fas fa-history', 'label' => __('Auditoria'), 'pattern' => 'activity-logs.*'],
+            ['route' => 'logs.index', 'icon' => 'fas fa-file-alt', 'label' => __('Logs'), 'pattern' => 'logs.*'],
+            ['route' => 'config.php.index', 'icon' => 'fab fa-php', 'label' => __('PHP'), 'pattern' => 'config.php.*'],
+            ['route' => 'config.apache.index', 'icon' => 'fas fa-server', 'label' => __('Apache'), 'pattern' => 'config.apache.*'],
+            ['route' => 'settings.index', 'icon' => 'fas fa-cog', 'label' => __('Sistema'), 'pattern' => 'settings.*'],
         ];
 
         if (!function_exists('isNavActive')) {
@@ -131,14 +131,14 @@
            class="fixed left-0 top-0 h-full z-50 flex flex-col backdrop-blur-xl border-r">
 
         <div class="sidebar-header flex items-center h-14 border-b border-gray-100 dark:border-gray-700/30 shrink-0">
-            <button id="sidebar-toggle" class="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors" title="Alternar menu">
+            <button id="sidebar-toggle" class="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors" title="{{ __('Alternar menu') }}">
                 <i class="fas fa-bars text-sm"></i>
             </button>
             <a href="{{ route('dashboard') }}" class="nav-label flex items-center gap-2 ml-2 font-semibold text-sm text-gray-900 dark:text-gray-100 overflow-hidden">
                 <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-sm shrink-0">
                     <i class="fas fa-server text-xs"></i>
                 </span>
-                Hosts Manager
+                {{ __('Hosts Manager') }}
             </a>
         </div>
 
@@ -157,21 +157,31 @@
     </aside>
 
     <header id="topbar" class="fixed top-0 right-0 left-0 h-14 flex items-center justify-end gap-1 px-4 sm:px-6 border-b border-gray-200/60 dark:border-gray-700/30 bg-white/60 dark:bg-[#1a1a2e]/60 backdrop-blur-md z-40">
-        <button onclick="toggleTheme()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Alternar tema">
+        <form action="{{ route('locale.set') }}" method="POST" class="flex items-center gap-1">
+            @csrf
+            @php $currentLocale = app()->getLocale(); @endphp
+            <button type="submit" name="locale" value="pt" class="px-2 py-1 rounded text-xs font-medium transition-colors {{ $currentLocale === 'pt' ? 'text-blue-600 dark:text-orange-400 bg-blue-50 dark:bg-orange-900/20' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800' }}" title="Português">PT</button>
+            <button type="submit" name="locale" value="en" class="px-2 py-1 rounded text-xs font-medium transition-colors {{ $currentLocale === 'en' ? 'text-blue-600 dark:text-orange-400 bg-blue-50 dark:bg-orange-900/20' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800' }}" title="English">EN</button>
+            <button type="submit" name="locale" value="es" class="px-2 py-1 rounded text-xs font-medium transition-colors {{ $currentLocale === 'es' ? 'text-blue-600 dark:text-orange-400 bg-blue-50 dark:bg-orange-900/20' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800' }}" title="Español">ES</button>
+        </form>
+
+        <div class="w-px h-5 bg-gray-200 dark:bg-gray-700"></div>
+
+        <button onclick="toggleTheme()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="{{ __('Alternar tema') }}">
             <svg id="sun-icon-topbar" class="w-3.5 h-3.5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
             </svg>
             <svg id="moon-icon-topbar" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
             </svg>
-            <span>Tema</span>
+            <span>{{ __('Tema') }}</span>
         </button>
 
         <div class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
             <i class="fas fa-server text-[10px]"></i>
-            <span>Apache</span>
+            <span>{{ __('Apache') }}</span>
             <span class="w-1.5 h-1.5 rounded-full {{ $apacheOnline ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
-            <span class="text-[10px] {{ $apacheOnline ? 'text-emerald-500' : 'text-red-400' }}">{{ $apacheOnline ? 'Online' : 'Offline' }}</span>
+            <span class="text-[10px] {{ $apacheOnline ? 'text-emerald-500' : 'text-red-400' }}">{{ $apacheOnline ? __('Online') : __('Offline') }}</span>
         </div>
 
         @if (!empty(config('app.admin_password')))
@@ -179,7 +189,7 @@
                 @csrf
                 <button type="submit" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <i class="fas fa-sign-out-alt text-[10px]"></i>
-                    <span>Sair</span>
+                    <span>{{ __('Sair') }}</span>
                 </button>
             </form>
         @endif
@@ -206,7 +216,7 @@
                                 <span class="block mt-1 text-xs opacity-75">{{ $parts[1] }}</span>
                             @endif
                         </div>
-                        <button type="button" onclick="this.parentElement.remove()" class="shrink-0 opacity-50 hover:opacity-100 transition-opacity {{ $type === 'success' ? 'text-emerald-700 dark:text-emerald-300' : ($type === 'warning' ? 'text-amber-700 dark:text-amber-300' : 'text-red-700 dark:text-red-300') }}" aria-label="Fechar">
+                        <button type="button" onclick="this.parentElement.remove()" class="shrink-0 opacity-50 hover:opacity-100 transition-opacity {{ $type === 'success' ? 'text-emerald-700 dark:text-emerald-300' : ($type === 'warning' ? 'text-amber-700 dark:text-amber-300' : 'text-red-700 dark:text-red-300') }}" aria-label="{{ __('Fechar') }}">
                             <i class="fas fa-times text-xs"></i>
                         </button>
                     </div>
@@ -214,6 +224,14 @@
             @endforeach
 
             @yield('content')
+
+            <footer class="mt-12 pt-6 border-t border-gray-200/60 dark:border-gray-700/30 text-center text-xs text-gray-400 dark:text-gray-500">
+                <p>
+                    {{ __('Desenvolvido por') }}
+                    <a href="https://lab.werneck.dev.br/" class="text-blue-600 dark:text-blue-400 hover:underline font-medium" target="_blank" rel="noopener noreferrer">Werneck Lab</a>
+                    &mdash; Hosts Manager v{{ config('app.version', '2.0') }}
+                </p>
+            </footer>
         </div>
     </main>
 
@@ -306,7 +324,7 @@
                     var btn = this.querySelector('button[type="submit"]');
                     if (btn) {
                         btn.disabled = true;
-                        btn.innerHTML = '<i class="fas fa-spinner fa-pulse mr-1"></i> Reiniciando...';
+                        btn.innerHTML = '<i class="fas fa-spinner fa-pulse mr-1"></i> {{ __('Reiniciando...') }}';
                     }
                 });
             });

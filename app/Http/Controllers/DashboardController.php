@@ -17,7 +17,7 @@ class DashboardController extends Controller
         $sslCount = VirtualHost::where('ssl_enabled', true)->count();
         $inactiveCount = VirtualHost::where('active', false)->count();
 
-        $apacheOnline = Cache::remember('apache_running', 10, function () use ($apache) {
+        $apacheOnline = Cache::remember('apache_running', 60, function () use ($apache) {
             try {
                 return $apache->isRunning();
             } catch (\Throwable) {
@@ -39,7 +39,9 @@ class DashboardController extends Controller
             return ! in_array($v->server_name, $apacheNames);
         });
 
-        $apacheConfigTest = $apache->testConfig();
+        $apacheConfigTest = Cache::remember('apache_config_test', 60, function () use ($apache) {
+            return $apache->testConfig();
+        });
         $apachePidCount = $apacheOnline ? $this->countApacheProcesses() : 0;
 
         $diskFree = disk_free_space('/');

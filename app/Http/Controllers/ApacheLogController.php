@@ -41,7 +41,7 @@ class ApacheLogController extends Controller
         $lines = (int) $request->input('lines', 200);
 
         if (! $logPath || ! File::exists($logPath)) {
-            return response()->json(['entries' => [], 'error' => 'Log file not found']);
+            return response()->json(['entries' => [], 'error' => __('Log file not found')]);
         }
 
         $result = $this->parseLog($logPath, $level, $search, $lines);
@@ -67,13 +67,13 @@ class ApacheLogController extends Controller
                 $diff = $now->getTimestamp() - $dt->getTimestamp();
 
                 if ($diff < 300) {
-                    $display = 'Agora';
+                    $display = __('Agora');
                 } elseif ($diff < 3600) {
-                    $display = 'Há '.floor($diff / 60).'min';
+                    $display = __('Há :min min', ['min' => floor($diff / 60)]);
                 } elseif ($dt->format('Y-m-d') === $now->format('Y-m-d')) {
-                    $display = 'Hoje '.$dt->format('H:i');
+                    $display = __('Hoje :time', ['time' => $dt->format('H:i')]);
                 } elseif ($dt->format('Y-m-d') === $now->modify('-1 day')->format('Y-m-d')) {
-                    $display = 'Ontem '.$dt->format('H:i');
+                    $display = __('Ontem :time', ['time' => $dt->format('H:i')]);
                 } else {
                     $display = $dt->format('d/m/Y H:i');
                 }

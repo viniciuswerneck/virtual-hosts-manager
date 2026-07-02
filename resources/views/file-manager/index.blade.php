@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Gerenciador de Arquivos')
+@section('title', __('Gerenciador de Arquivos'))
 
 @section('content')
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight"><i class="fas fa-folder-open text-blue-500 mr-2"></i>Gerenciador de Arquivos</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Navegue pelos diretórios dos seus projetos</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight"><i class="fas fa-folder-open text-blue-500 mr-2"></i>{{ __('Gerenciador de Arquivos') }}</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('Navegue pelos diretórios dos seus projetos') }}</p>
     </div>
 
     <div class="card p-4 mb-6">
@@ -14,7 +14,7 @@
             <input type="text" name="path" value="{{ $path }}"
                    class="input flex-1 font-mono text-sm">
             <button type="submit" class="btn-primary btn-sm">
-                <i class="fas fa-arrow-right"></i> Ir
+                <i class="fas fa-arrow-right"></i> {{ __('Ir') }}
             </button>
         </form>
     </div>
@@ -37,10 +37,10 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="bg-gray-50/80 dark:bg-gray-800/80 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        <th class="text-left px-4 py-3.5">Nome</th>
-                        <th class="text-left px-4 py-3.5 hidden sm:table-cell">Tamanho</th>
-                        <th class="text-left px-4 py-3.5 hidden md:table-cell">Modificado</th>
-                        <th class="text-center px-4 py-3.5">Ações</th>
+                        <th class="text-left px-4 py-3.5">{{ __('Nome') }}</th>
+                        <th class="text-left px-4 py-3.5 hidden sm:table-cell">{{ __('Tamanho') }}</th>
+                        <th class="text-left px-4 py-3.5 hidden md:table-cell">{{ __('Modificado') }}</th>
+                        <th class="text-center px-4 py-3.5">{{ __('Ações') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700/50">
@@ -98,16 +98,16 @@
                             <td class="px-4 py-3 text-center">
                                 @if ($item['type'] === 'dir')
                                     <a href="{{ route('file-manager.index', ['path' => $item['path']]) }}"
-                                       class="btn-ghost btn-xs p-1.5" title="Abrir">
+                                       class="btn-ghost btn-xs p-1.5" title="{{ __('Abrir') }}">
                                         <i class="fas fa-folder-open"></i>
                                     </a>
                                     <button onclick="openExplorerPath('{{ str_replace('/', '\\', $item['path']) }}')"
-                                            class="btn-ghost btn-xs p-1.5" title="Abrir no Explorer">
+                                            class="btn-ghost btn-xs p-1.5" title="{{ __('Abrir no Explorer') }}">
                                         <i class="fas fa-external-link-alt"></i>
                                     </button>
                                 @else
                                     <a href="{{ route('file-manager.show', ['file' => $item['path']]) }}"
-                                       class="btn-ghost btn-xs p-1.5" title="Visualizar">
+                                       class="btn-ghost btn-xs p-1.5" title="{{ __('Visualizar') }}">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 @endif
@@ -119,7 +119,7 @@
                                 <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100 text-gray-400 mb-3 dark:bg-gray-700">
                                     <i class="fas fa-folder-open text-xl"></i>
                                 </div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Diretório vazio.</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Diretório vazio.') }}</p>
                             </td>
                         </tr>
                     @endforelse

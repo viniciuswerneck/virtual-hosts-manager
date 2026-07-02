@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login - Hosts Manager</title>
+    <title>{{ __('Login - Hosts Manager') }}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="alternate icon" href="/favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
@@ -35,7 +35,7 @@
                     <i class="fas fa-server text-lg"></i>
                 </span>
                 <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">Hosts Manager</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerenciador de Virtual Hosts</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('Gerenciador de Virtual Hosts') }}</p>
             </div>
 
             @if (session('error'))
@@ -45,7 +45,7 @@
                     </span>
                     <div class="text-sm text-red-700 dark:text-red-300">
                         <p>{{ session('error') }}</p>
-                        <p class="mt-2 text-xs opacity-75">Para gerar um hash da senha: <code class="bg-red-100 px-1 rounded dark:bg-red-900">php -r "echo password_hash('sua-senha', PASSWORD_BCRYPT);"</code></p>
+                        <p class="mt-2 text-xs opacity-75">{{ __('Para gerar um hash da senha:') }} <code class="bg-red-100 px-1 rounded dark:bg-red-900">php -r "echo password_hash('sua-senha', PASSWORD_BCRYPT);"</code></p>
                     </div>
                 </div>
             @endif
@@ -53,17 +53,17 @@
             <form action="{{ route('admin.login') }}" method="POST" class="space-y-5">
                 @csrf
                 <div>
-                    <label class="label" for="password"><i class="fas fa-lock mr-1.5 text-gray-400"></i>Senha de Administrador</label>
+                    <label class="label" for="password"><i class="fas fa-lock mr-1.5 text-gray-400"></i>{{ __('Senha de Administrador') }}</label>
                     <input type="password" name="password" id="password" required autofocus
-                           class="input" placeholder="Digite sua senha">
+                           class="input" placeholder="{{ __('Digite sua senha') }}">
                 </div>
                 <button type="submit" class="btn-primary w-full py-2.5">
-                    <i class="fas fa-sign-in-alt"></i> Entrar
+                    <i class="fas fa-sign-in-alt"></i> {{ __('Entrar') }}
                 </button>
             </form>
         </div>
         <p class="text-center text-xs text-gray-400 dark:text-gray-500 mt-6">
-            Desenvolvido por <a href="https://lab.werneck.dev.br/" class="text-blue-600 dark:text-blue-400 hover:underline font-medium" target="_blank">Werneck Lab</a>
+            {{ __('Desenvolvido por') }} <a href="https://lab.werneck.dev.br/" class="text-blue-600 dark:text-blue-400 hover:underline font-medium" target="_blank">Werneck Lab</a>
         </p>
     </div>
 

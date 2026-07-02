@@ -27,7 +27,7 @@ class ConfigController extends Controller
             $php->updateDirectives($directives);
 
             return redirect()->route('config.php.index')
-                ->with('success', 'Configurações do PHP salvas com sucesso!|Reinicie o Apache se alterou diretivas que exigem restart.');
+                ->with('success', __('Configurações do PHP salvas com sucesso!|Reinicie o Apache se alterou diretivas que exigem restart.'));
         } catch (\Throwable $e) {
             return redirect()->route('config.php.index')
                 ->with('error', $e->getMessage());
@@ -41,14 +41,14 @@ class ConfigController extends Controller
 
         if (empty($extension)) {
             return redirect()->route('config.php.index')
-                ->with('error', 'Extensão não informada.');
+                ->with('error', __('Extensão não informada.'));
         }
 
         try {
             $php->toggleExtension($extension, (bool) $enable);
 
             return redirect()->route('config.php.index')
-                ->with('success', 'Extensão '.($enable ? 'ativada' : 'desativada').' com sucesso!');
+                ->with('success', __('Extensão :status com sucesso!', ['status' => $enable ? __('ativada') : __('desativada')]));
         } catch (\Throwable $e) {
             return redirect()->route('config.php.index')
                 ->with('error', $e->getMessage());
@@ -74,7 +74,7 @@ class ConfigController extends Controller
             $apache->updateDirectives($directives);
 
             return redirect()->route('config.apache.index')
-                ->with('success', 'Configurações do Apache salvas com sucesso!|Execute o teste de configuração antes de reiniciar.');
+                ->with('success', __('Configurações do Apache salvas com sucesso!|Execute o teste de configuração antes de reiniciar.'));
         } catch (\Throwable $e) {
             return redirect()->route('config.apache.index')
                 ->with('error', $e->getMessage());
@@ -88,14 +88,14 @@ class ConfigController extends Controller
 
         if (empty($module)) {
             return redirect()->route('config.apache.index')
-                ->with('error', 'Módulo não informado.');
+                ->with('error', __('Módulo não informado.'));
         }
 
         try {
             $apache->toggleModule($module, (bool) $enable);
 
             return redirect()->route('config.apache.index')
-                ->with('success', 'Módulo '.($enable ? 'ativado' : 'desativado').' com sucesso!');
+                ->with('success', __('Módulo :status com sucesso!', ['status' => $enable ? __('ativado') : __('desativado')]));
         } catch (\Throwable $e) {
             return redirect()->route('config.apache.index')
                 ->with('error', $e->getMessage());
@@ -108,11 +108,11 @@ class ConfigController extends Controller
 
         if ($result['success']) {
             return redirect()->route('config.apache.index')
-                ->with('success', 'Teste de configuração: OK|Sintaxe do Apache válida.');
+                ->with('success', __('Teste de configuração: OK|Sintaxe do Apache válida.'));
         }
 
         return redirect()->route('config.apache.index')
-            ->with('error', 'Erro na configuração:|'.$result['output']);
+            ->with('error', __('Erro na configuração:|') . $result['output']);
     }
 
     public function apacheRestart(ApacheConfigService $apache)
@@ -121,7 +121,7 @@ class ConfigController extends Controller
 
         if ($result['success']) {
             return redirect()->route('config.apache.index')
-                ->with('success', 'Apache reiniciado com sucesso!');
+                ->with('success', __('Apache reiniciado com sucesso!'));
         }
 
         return redirect()->route('config.apache.index')

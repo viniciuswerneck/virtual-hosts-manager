@@ -189,7 +189,7 @@ class ApacheService
             $httpdOutput = $httpdOutputArr ? implode("\n", $httpdOutputArr) : null;
 
             if ($httpdExit === 0 && $this->waitForRunning(10)) {
-                return ['success' => true, 'output' => $httpdOutput ?: 'Apache reiniciado via httpd -k restart.'];
+                return ['success' => true, 'output' => $httpdOutput ?: __('Apache reiniciado via httpd -k restart.')];
             }
 
             // Se httpd -k restart falhou, tenta via serviço
@@ -215,7 +215,7 @@ class ApacheService
             $this->waitForNotRunning(5);
             $this->runApacheBackground();
             if ($this->waitForRunning(10)) {
-                return ['success' => true, 'output' => 'Apache reiniciado via taskkill + httpd.'];
+                return ['success' => true, 'output' => __('Apache reiniciado via taskkill + httpd.')];
             }
 
             return [
@@ -241,7 +241,7 @@ class ApacheService
         // Tenta iniciar binário direto
         $this->runApacheBackground();
         if ($this->waitForRunning(10)) {
-            return ['success' => true, 'output' => 'Apache iniciado via httpd direto.'];
+            return ['success' => true, 'output' => __('Apache iniciado via httpd direto.')];
         }
 
         return [
@@ -269,7 +269,7 @@ class ApacheService
             $outputStr = $output ? implode("\n", $output) : null;
 
             if ($this->waitForRunning(10)) {
-                return ['success' => true, 'output' => 'Apache reiniciado via PowerShell elevado.'];
+                return ['success' => true, 'output' => __('Apache reiniciado via PowerShell elevado.')];
             }
 
             if ($outputStr && $this->isAccessDenied($outputStr)) {

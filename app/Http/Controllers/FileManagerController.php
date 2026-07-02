@@ -15,7 +15,7 @@ class FileManagerController extends Controller
 
         if (! File::isDirectory($path)) {
             return redirect()->route('file-manager.index', ['path' => config('virtualhosts.default_document_root')])
-                ->with('error', 'Diretório não encontrado.');
+                ->with('error', __('Diretório não encontrado.'));
         }
 
         $items = collect(File::directories($path))->map(fn ($d) => [
@@ -44,7 +44,7 @@ class FileManagerController extends Controller
         $filePath = $request->input('file');
 
         if (! $filePath || ! File::exists($filePath) || File::isDirectory($filePath)) {
-            return redirect()->back()->with('error', 'Arquivo não encontrado.');
+            return redirect()->back()->with('error', __('Arquivo não encontrado.'));
         }
 
         $ext = pathinfo($filePath, PATHINFO_EXTENSION);
@@ -52,7 +52,7 @@ class FileManagerController extends Controller
         $isText = in_array(strtolower($ext ?? ''), $textExtensions, true);
 
         if (! $isText) {
-            return redirect()->back()->with('error', 'Visualização de arquivos binários não suportada.');
+            return redirect()->back()->with('error', __('Visualização de arquivos binários não suportada.'));
         }
 
         $content = File::get($filePath);

@@ -88,6 +88,8 @@ VHOSTS;
             ['server_name' => 'test.local', 'document_root' => 'D:/www/test', 'port' => 80, 'ssl_enabled' => false],
         ];
 
+        File::shouldReceive('exists')
+            ->andReturn(false);
         File::shouldReceive('put')
             ->andThrow(new \Exception('Permission denied'));
 

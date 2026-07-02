@@ -18,7 +18,7 @@ class ProjectScaffoldService
             'wordpress' => $this->scaffoldWordPress($path),
             'html' => $this->scaffoldHtml($path),
             'php' => $this->scaffoldPhp($path),
-            default => ['success' => true, 'message' => 'Nenhum template selecionado.'],
+            default => ['success' => true, 'message' => __('Nenhum template selecionado.')],
         };
     }
 
@@ -42,7 +42,7 @@ class ProjectScaffoldService
         $process->run();
 
         if ($process->isSuccessful()) {
-            return ['success' => true, 'message' => 'Projeto Laravel criado com sucesso!'];
+            return ['success' => true, 'message' => __('Projeto Laravel criado com sucesso!')];
         }
 
         return ['success' => false, 'message' => 'Erro ao criar projeto Laravel: '.($process->getErrorOutput() ?: $process->getOutput())];
@@ -83,10 +83,10 @@ class ProjectScaffoldService
                 File::deleteDirectory("{$path}/wordpress");
             }
 
-            return ['success' => true, 'message' => 'WordPress baixado e extraído com sucesso!'];
+            return ['success' => true, 'message' => __('WordPress baixado e extraído com sucesso!')];
         }
 
-        return ['success' => false, 'message' => 'Erro ao extrair WordPress.'];
+        return ['success' => false, 'message' => __('Erro ao extrair WordPress.')];
     }
 
     private function scaffoldHtml(string $path): array
@@ -117,7 +117,7 @@ HTML;
         File::put("{$path}/style.css", "/* Seu CSS aqui */\n");
         File::put("{$path}/script.js", "// Seu JavaScript aqui\n");
 
-        return ['success' => true, 'message' => 'Projeto HTML base criado com sucesso!'];
+        return ['success' => true, 'message' => __('Projeto HTML base criado com sucesso!')];
     }
 
     private function scaffoldPhp(string $path): array
@@ -164,6 +164,6 @@ PHP;
         File::put("{$path}/index.php", $indexContent);
         File::put("{$path}/config.php", "<?php\n\n// Configurações do projeto\n");
 
-        return ['success' => true, 'message' => 'Projeto PHP base criado com sucesso!'];
+        return ['success' => true, 'message' => __('Projeto PHP base criado com sucesso!')];
     }
 }

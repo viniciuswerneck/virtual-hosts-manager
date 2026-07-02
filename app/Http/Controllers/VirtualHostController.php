@@ -86,18 +86,18 @@ class VirtualHostController extends Controller
             if (($data['ssl_enabled'] ?? true) && ! $mkcert->certExists($serverName)) {
                 $result = $mkcert->generate($serverName);
                 if (! $result['success']) {
-                    throw new RuntimeException('Erro ao gerar certificado SSL: '.($result['output'] ?? 'erro desconhecido'));
+                    throw new RuntimeException(__('Erro ao gerar certificado SSL: ') . ($result['output'] ?? __('erro desconhecido')));
                 }
                 $certGenerated = true;
             }
 
             $result = $manager->applyApacheConfig();
 
-            $logger->log('created', "Virtual host {$serverName} criado", $vhost);
+            $logger->log('created', __('Virtual host :name criado', ['name' => $serverName]), $vhost);
 
-            $msg = "Virtual host {$serverName} criado com sucesso!";
+            $msg = __('Virtual host :name criado com sucesso!', ['name' => $serverName]);
             if ($scaffolded) {
-                $msg .= ' Projeto scaffolded no diretório.';
+                $msg .= __(' Projeto scaffolded no diretório.');
             }
 
             return redirect()->route('virtual-hosts.index')
@@ -158,10 +158,10 @@ class VirtualHostController extends Controller
 
             $result = $manager->applyApacheConfig();
 
-            $logger->log('updated', "Virtual host {$newName} atualizado", $virtualHost);
+            $logger->log('updated', __('Virtual host :name atualizado', ['name' => $newName]), $virtualHost);
 
             return redirect()->route('virtual-hosts.index')
-                ->with($result['type'], "Virtual host {$newName} atualizado com sucesso!|{$result['message']}");
+                ->with($result['type'], __('Virtual host :name atualizado com sucesso!|', ['name' => $newName]) . $result['message']);
         } catch (\Throwable $e) {
             return redirect()->back()
                 ->withInput()
@@ -186,10 +186,10 @@ class VirtualHostController extends Controller
 
             $result = $manager->applyApacheConfig();
 
-            $logger->log('deleted', "Virtual host {$name} excluído", $virtualHost);
+            $logger->log('deleted', __('Virtual host :name excluído', ['name' => $name]), $virtualHost);
 
             return redirect()->route('virtual-hosts.index')
-                ->with($result['type'], "Virtual host {$name} excluído com sucesso!|{$result['message']}");
+                ->with($result['type'], __('Virtual host :name excluído com sucesso!|', ['name' => $name]) . $result['message']);
         } catch (\Throwable $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -208,12 +208,13 @@ class VirtualHostController extends Controller
             $configWritten = true;
             $apacheRestarted = $result['type'] === 'success';
         } catch (\Throwable $e) {
-            return redirect()->back()->with('warning', "Vhost alternado no banco, mas erro ao aplicar config: {$e->getMessage()}");
+            return redirect()->back()->with('warning', __('Vhost alternado no banco, mas erro ao aplicar config: ') . $e->getMessage());
         }
 
         Cache::forget('apache_running');
+        Cache::forget('apache_config_test');
 
-        $status = $virtualHost->active ? 'ativado' : 'desativado';
+        $status = $virtualHost->active ? __('ativado') : __('desativado');
         $logger->log('toggled', "Virtual host {$virtualHost->server_name} {$status}", $virtualHost);
 
         if (! $configWritten || ! $apacheRestarted) {
@@ -233,7 +234,7 @@ class VirtualHostController extends Controller
         $action = $request->input('action'); // 'activate' or 'deactivate'
 
         if (empty($ids) || ! in_array($action, ['activate', 'deactivate'])) {
-            return redirect()->back()->with('error', 'Selecione pelo menos um vhost.');
+            return redirect()->back()->with('error', __('Selecione pelo menos um vhost.'));
         }
 
         $active = $action === 'activate';
@@ -245,7 +246,7 @@ class VirtualHostController extends Controller
                 $vhost = VirtualHost::find($id);
                 if ($vhost && $vhost->active !== $active) {
                     $vhost->update(['active' => $active]);
-                    $logger->log('batch_'.$action, "Virtual host {$vhost->server_name} ".($active ? 'ativado' : 'desativado').' (lote)', $vhost);
+                    $logger->log('batch_'.$action, __('Virtual host :name :status (lote)', ['name' => $vhost->server_name, 'status' => $active ? __('ativado') : __('desativado')]), $vhost);
                     $count++;
                 }
             }
@@ -253,11 +254,11 @@ class VirtualHostController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', 'Erro ao processar operação em lote: '.$e->getMessage());
+            return redirect()->back()->with('error', __('Erro ao processar operação em lote: ') . $e->getMessage());
         }
 
         if ($count === 0) {
-            return redirect()->back()->with('warning', 'Nenhum vhost foi alterado (já estavam no estado desejado).');
+            return redirect()->back()->with('warning', __('Nenhum vhost foi alterado (já estavam no estado desejado).'));
         }
 
         try {
@@ -266,7 +267,7 @@ class VirtualHostController extends Controller
             return redirect()->back()->with('warning', "{$count} vhost(s) alterados, mas erro ao aplicar config: {$e->getMessage()}");
         }
 
-        $statusLabel = $active ? 'ativado' : 'desativado';
+        $statusLabel = $active ? __('ativado') : __('desativado');
 
         return redirect()->back()
             ->with($result['type'], "{$count} vhost(s) {$statusLabel} em lote!|{$result['message']}");
@@ -277,7 +278,7 @@ class VirtualHostController extends Controller
         $ids = $request->input('ids', []);
 
         if (empty($ids)) {
-            return redirect()->back()->with('error', 'Selecione pelo menos um vhost.');
+            return redirect()->back()->with('error', __('Selecione pelo menos um vhost.'));
         }
 
         $count = 0;
@@ -309,7 +310,7 @@ class VirtualHostController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', 'Erro ao excluir em lote: '.$e->getMessage());
+            return redirect()->back()->with('error', __('Erro ao excluir em lote: ') . $e->getMessage());
         }
 
         try {
@@ -338,7 +339,7 @@ class VirtualHostController extends Controller
         $data = json_decode($content, true);
 
         if (! is_array($data) || empty($data)) {
-            return redirect()->back()->with('error', 'Arquivo JSON inválido ou vazio.');
+            return redirect()->back()->with('error', __('Arquivo JSON inválido ou vazio.'));
         }
 
         $imported = 0;
@@ -361,7 +362,7 @@ class VirtualHostController extends Controller
                         'github_url' => $item['github_url'] ?? null,
                     ]
                 );
-                $logger->log('imported', "Virtual host {$item['server_name']} importado do JSON");
+                $logger->log('imported', __('Virtual host :name importado do JSON', ['name' => $item['server_name']]));
                 $imported++;
             } catch (\Throwable) {
             }
@@ -413,7 +414,7 @@ class VirtualHostController extends Controller
             $zipPath = storage_path('app/backup-'.date('Y-m-d-His').'.zip');
             $zip = new ZipArchive;
             if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-                throw new RuntimeException('Erro ao criar arquivo ZIP.');
+                throw new RuntimeException(__('Erro ao criar arquivo ZIP.'));
             }
 
             $files = File::allFiles($tempDir);
@@ -425,13 +426,13 @@ class VirtualHostController extends Controller
 
             File::deleteDirectory($tempDir);
 
-            $logger->log('backup', 'Backup completo exportado');
+            $logger->log('backup', __('Backup completo exportado'));
 
             return response()->download($zipPath)->deleteFileAfterSend(true);
         } catch (\Throwable $e) {
             File::deleteDirectory($tempDir);
 
-            return redirect()->back()->with('error', 'Erro ao exportar backup: '.$e->getMessage());
+            return redirect()->back()->with('error', __('Erro ao exportar backup: ') . $e->getMessage());
         }
     }
 
@@ -445,7 +446,7 @@ class VirtualHostController extends Controller
         try {
             $zip = new ZipArchive;
             if ($zip->open($request->file('backup_file')) !== true) {
-                throw new RuntimeException('Erro ao abrir arquivo ZIP.');
+                throw new RuntimeException(__('Erro ao abrir arquivo ZIP.'));
             }
             $zip->extractTo($tempDir);
             $zip->close();
@@ -537,14 +538,14 @@ class VirtualHostController extends Controller
 
             File::deleteDirectory($tempDir);
 
-            $logger->log('backup_restore', "Backup restaurado: {$imported} vhosts");
+            $logger->log('backup_restore', __('Backup restaurado: :count vhosts', ['count' => $imported]));
 
             return redirect()->route('virtual-hosts.index')
                 ->with('success', "Backup restaurado com sucesso! {$imported} vhosts importados.");
         } catch (\Throwable $e) {
             File::deleteDirectory($tempDir);
 
-            return redirect()->back()->with('error', 'Erro ao restaurar backup: '.$e->getMessage());
+            return redirect()->back()->with('error', __('Erro ao restaurar backup: ') . $e->getMessage());
         }
     }
 
@@ -552,7 +553,7 @@ class VirtualHostController extends Controller
     {
         $count = $manager->syncFromApache();
 
-        $logger->log('synced', "Sincronizados {$count} vhosts do Apache");
+        $logger->log('synced', __('Sincronizados :count vhosts do Apache', ['count' => $count]));
 
         return redirect()->route('virtual-hosts.index')
             ->with('success', "{$count} virtual hosts importados do Apache com sucesso!");
@@ -574,16 +575,18 @@ class VirtualHostController extends Controller
         $test = $apache->testConfig();
         if (! $test['success']) {
             Cache::forget('apache_running');
+        Cache::forget('apache_config_test');
 
             return redirect()->route('virtual-hosts.index')
-                ->with('error', 'Erro de sintaxe no Apache: '.$test['output']);
+                ->with('error', __('Erro de sintaxe no Apache: ') . $test['output']);
         }
 
         $result = $apache->restart();
 
         Cache::forget('apache_running');
+        Cache::forget('apache_config_test');
 
-        $logger->log('restarted', 'Apache reiniciado');
+        $logger->log('restarted', __('Apache reiniciado'));
 
         if ($result['success']) {
             return redirect()->route('virtual-hosts.index')
@@ -600,13 +603,13 @@ class VirtualHostController extends Controller
         $result = $manager->regenerateCert($virtualHost);
 
         if ($result['success']) {
-            $logger->log('cert_regenerated', "Certificado SSL para {$name} regenerado", $virtualHost);
+            $logger->log('cert_regenerated', __('Certificado SSL para :name regenerado', ['name' => $name]), $virtualHost);
 
             return redirect()->route('virtual-hosts.index')
                 ->with('success', "Certificado SSL para {$name} regenerado com sucesso!");
         }
 
         return redirect()->route('virtual-hosts.index')
-            ->with('error', 'Erro ao gerar certificado: '.$result['output']);
+            ->with('error', __('Erro ao gerar certificado: ') . $result['output']);
     }
 }

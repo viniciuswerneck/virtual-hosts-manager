@@ -12,13 +12,13 @@
         </div>
         <div class="flex gap-2">
             <a href="{{ route('file-manager.index', ['path' => $dir]) }}" class="btn-secondary btn-sm">
-                <i class="fas fa-arrow-left"></i> Voltar
+                <i class="fas fa-arrow-left"></i> {{ __('Voltar') }}
             </a>
             <button onclick="openInVSCode('{{ $dir }}')" class="btn-secondary btn-sm">
-                <i class="fas fa-code"></i> Abrir no VS Code
+                <i class="fas fa-code"></i> {{ __('Abrir no VS Code') }}
             </button>
             <button onclick="openExplorerPath('{{ str_replace('/', '\\', $dir) }}')" class="btn-secondary btn-sm">
-                <i class="fas fa-folder-open"></i> Explorer
+                <i class="fas fa-folder-open"></i> {{ __('Explorer') }}
             </button>
         </div>
     </div>
@@ -31,7 +31,7 @@
             </span>
             <button onclick="copyToClipboard(document.getElementById('file-content').textContent)"
                     class="hover:text-white transition-colors flex items-center gap-1.5">
-                <i class="fas fa-copy"></i> Copiar
+                <i class="fas fa-copy"></i> {{ __('Copiar') }}
             </button>
         </div>
         <pre id="file-content" class="p-4 text-sm font-mono text-gray-100 bg-gray-950 overflow-x-auto max-h-[600px] overflow-y-auto leading-relaxed" style="white-space: pre-wrap; word-break: break-all;">{{ $content }}</pre>

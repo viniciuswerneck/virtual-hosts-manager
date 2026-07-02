@@ -25,6 +25,16 @@ Route::get('/admin/login', function () {
     return view('auth.login');
 })->name('admin.login');
 
+Route::post('/locale', function (Request $request) {
+    $locale = $request->input('locale', 'pt');
+    if (in_array($locale, ['en', 'pt', 'es'])) {
+        $request->session()->put('locale', $locale);
+        app()->setLocale($locale);
+    }
+
+    return redirect()->back();
+})->name('locale.set');
+
 Route::post('/admin/login', function (Request $request) {
     $password = config('app.admin_password');
 

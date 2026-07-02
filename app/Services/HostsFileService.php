@@ -30,12 +30,12 @@ class HostsFileService
             return true;
         } catch (Throwable $e) {
             throw new \RuntimeException(
-                "Permissão negada ao escrever no arquivo hosts ({$this->hostsFile}).\n".
-                "Para resolver, execute como Administrador:\n".
-                "  1. Abra o PowerShell ou CMD como Administrador\n".
-                "  2. Navegue até D:\\www\\localserver\n".
-                "  3. Execute: fix-permissions.bat\n".
-                'Ou execute o php artisan serve como Administrador.'
+                __('Permissão negada ao escrever no arquivo hosts (:path).', ['path' => $this->hostsFile]) . "\n" .
+                __('Para resolver, execute como Administrador:') . "\n" .
+                "  1. " . __('Abra o PowerShell ou CMD como Administrador') . "\n" .
+                "  2. " . __('Navegue até D:\\www\\localserver') . "\n" .
+                "  3. " . __('Execute: fix-permissions.bat') . "\n" .
+                __('Ou execute o php artisan serve como Administrador.')
             );
         }
     }
@@ -52,8 +52,8 @@ class HostsFileService
             return true;
         } catch (Throwable $e) {
             throw new \RuntimeException(
-                "Permissão negada ao escrever no arquivo hosts ({$this->hostsFile}).\n".
-                'Execute o fix-permissions.bat como Administrador.'
+                __('Permissão negada ao escrever no arquivo hosts (:path).', ['path' => $this->hostsFile]) . "\n" .
+                __('Execute o fix-permissions.bat como Administrador.')
             );
         }
     }

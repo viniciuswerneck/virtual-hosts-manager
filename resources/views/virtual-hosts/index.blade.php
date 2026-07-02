@@ -1,48 +1,48 @@
 @extends('layouts.app')
 
-@section('title', 'Virtual Hosts')
+@section('title', __('Virtual Hosts'))
 
 @section('content')
     <div class="flex items-start justify-between mb-6 gap-4 flex-wrap">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Virtual Hosts</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie seus domínios locais</p>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{{ __('Virtual Hosts') }}</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('Gerencie seus domínios locais') }}</p>
         </div>
         <div class="flex gap-2 flex-wrap">
             <a href="{{ route('virtual-hosts.sync') }}"
                class="btn btn-secondary btn-sm"
-               onclick="return confirm('Importar todos os hosts do Apache para o banco?')">
-                <i class="fas fa-sync-alt"></i> Sincronizar
+               onclick="return confirm('{{ __('Importar todos os hosts do Apache para o banco?') }}')">
+                <i class="fas fa-sync-alt"></i> {{ __('Sincronizar') }}
             </a>
             <a href="{{ route('virtual-hosts.export') }}"
                class="btn btn-secondary btn-sm">
-                <i class="fas fa-download"></i> Exportar
+                <i class="fas fa-download"></i> {{ __('Exportar') }}
             </a>
             <form action="{{ route('virtual-hosts.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <label class="btn btn-secondary btn-sm cursor-pointer">
-                    <i class="fas fa-upload"></i> Importar
+                    <i class="fas fa-upload"></i> {{ __('Importar') }}
                     <input type="file" name="backup_file" accept=".json" class="hidden" onchange="this.form.submit()">
                 </label>
             </form>
             <a href="{{ route('backup.export') }}" class="btn btn-secondary btn-sm">
-                <i class="fas fa-archive"></i> Backup
+                <i class="fas fa-archive"></i> {{ __('Backup') }}
             </a>
             <form action="{{ route('backup.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <label class="btn btn-secondary btn-sm cursor-pointer">
-                    <i class="fas fa-file-import"></i> Restore
+                    <i class="fas fa-file-import"></i> {{ __('Restore') }}
                     <input type="file" name="backup_file" accept=".zip" class="hidden" onchange="this.form.submit()">
                 </label>
             </form>
             <a href="{{ route('virtual-hosts.create') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus-circle"></i> Novo Virtual Host
+                <i class="fas fa-plus-circle"></i> {{ __('Novo Virtual Host') }}
             </a>
             <form action="{{ route('virtual-hosts.restart') }}" method="POST" class="restart-form"
-                  onsubmit="return confirm('Reiniciar o Apache agora? A operacao pode levar alguns segundos.')">
+                  onsubmit="return confirm('{{ __('Reiniciar o Apache agora? A operacao pode levar alguns segundos.') }}')">
                 @csrf
                 <button type="submit" class="btn btn-warning btn-sm">
-                    <i class="fas fa-redo-alt"></i> Reiniciar Apache
+                    <i class="fas fa-redo-alt"></i> {{ __('Reiniciar Apache') }}
                 </button>
             </form>
         </div>
@@ -54,10 +54,10 @@
                    class="flex items-center gap-3 w-full rounded-xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20 dark:focus-within:ring-blue-400/20 transition-all">
                 <i class="fas fa-search text-gray-400 dark:text-gray-500 shrink-0"></i>
                 <input type="text" name="search" id="search-input" value="{{ $search ?? '' }}"
-                       placeholder="Buscar por nome, diretório ou observações..."
+                       placeholder="{{ __('Buscar por nome, diretório ou observações...') }}"
                        class="flex-1 bg-transparent outline-none border-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 min-w-0">
                 @if ($search)
-                    <a href="{{ route('virtual-hosts.index') }}" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors shrink-0" title="Limpar busca">
+                    <a href="{{ route('virtual-hosts.index') }}" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors shrink-0" title="{{ __('Limpar busca') }}">
                         <i class="fas fa-times-circle"></i>
                     </a>
                 @endif
@@ -84,23 +84,23 @@
 
     @if ($search)
         <div class="mb-3 text-sm text-gray-500 dark:text-gray-400">
-            <i class="fas fa-filter mr-1"></i> Resultados para "<strong class="text-gray-700 dark:text-gray-200">{{ $search }}</strong>" — {{ $vhosts->total() }} encontrado{{ $vhosts->total() !== 1 ? 's' : '' }}
+            <i class="fas fa-filter mr-1"></i> {{ __('Resultados para') }} "<strong class="text-gray-700 dark:text-gray-200">{{ $search }}</strong>" — {{ $vhosts->total() }} {{ __('encontrado') }}{{ $vhosts->total() !== 1 ? 's' : '' }}
         </div>
     @endif
 
     <div id="batch-bar" class="hidden mb-4 flex items-center gap-3 p-3 rounded-xl bg-blue-50/80 border border-blue-200/60 dark:bg-blue-950/20 dark:border-blue-800/30">
         <span class="text-sm text-blue-700 dark:text-blue-300" id="batch-count">0</span>
-        <span class="text-sm text-blue-700 dark:text-blue-300">selecionado(s)</span>
+        <span class="text-sm text-blue-700 dark:text-blue-300">{{ __('selecionado(s)') }}</span>
         <div class="flex gap-2 ml-auto">
             <button type="button" onclick="batchAction('activate')" class="btn btn-primary btn-xs">
-                <i class="fas fa-check-circle"></i> Ativar
+                <i class="fas fa-check-circle"></i> {{ __('Ativar') }}
             </button>
             <button type="button" onclick="batchAction('deactivate')" class="btn btn-secondary btn-xs">
-                <i class="fas fa-pause-circle"></i> Desativar
+                <i class="fas fa-pause-circle"></i> {{ __('Desativar') }}
             </button>
             <button type="button" onclick="batchAction('delete')" class="btn btn-danger btn-xs">
-                <i class="fas fa-trash-alt"></i> Excluir
-            </button>
+                                <i class="fas fa-trash-alt"></i> {{ __('Excluir') }}
+                            </button>
         </div>
     </div>
 
@@ -118,14 +118,14 @@
                         <th class="text-left px-4 py-3.5 w-10">
                             <input type="checkbox" id="select-all" onchange="toggleAll(this)" class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500">
                         </th>
-                        <th class="text-left px-4 py-3.5"><i class="fas fa-server mr-1.5"></i>Servidor</th>
-                        <th class="text-left px-4 py-3.5"><i class="fas fa-folder mr-1.5"></i>Diretório Raiz</th>
-                        <th class="text-center px-4 py-3.5"><i class="fas fa-lock mr-1.5"></i>SSL</th>
-                        <th class="text-center px-4 py-3.5"><i class="fas fa-certificate mr-1.5"></i>Cert</th>
-                        <th class="text-center px-4 py-3.5"><i class="fas fa-plug mr-1.5"></i>Porta</th>
-                        <th class="text-center px-4 py-3.5"><i class="fas fa-power-off mr-1.5"></i>Ativo</th>
-                        <th class="text-center px-4 py-3.5"><i class="fas fa-check-circle mr-1.5"></i>Apache</th>
-                        <th class="text-center px-4 py-3.5"><i class="fas fa-tools mr-1.5"></i>Ações</th>
+                        <th class="text-left px-4 py-3.5"><i class="fas fa-server mr-1.5"></i>{{ __('Servidor') }}</th>
+                        <th class="text-left px-4 py-3.5"><i class="fas fa-folder mr-1.5"></i>{{ __('Diretório Raiz') }}</th>
+                        <th class="text-center px-4 py-3.5"><i class="fas fa-lock mr-1.5"></i>{{ __('SSL') }}</th>
+                        <th class="text-center px-4 py-3.5"><i class="fas fa-certificate mr-1.5"></i>{{ __('Cert') }}</th>
+                        <th class="text-center px-4 py-3.5"><i class="fas fa-plug mr-1.5"></i>{{ __('Porta') }}</th>
+                        <th class="text-center px-4 py-3.5"><i class="fas fa-power-off mr-1.5"></i>{{ __('Ativo') }}</th>
+                        <th class="text-center px-4 py-3.5"><i class="fas fa-check-circle mr-1.5"></i>{{ __('Apache') }}</th>
+                        <th class="text-center px-4 py-3.5"><i class="fas fa-tools mr-1.5"></i>{{ __('Ações') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700/50">
@@ -143,7 +143,7 @@
                                        class="text-blue-600 dark:text-blue-400 hover:underline">
                                         {{ $vhost->server_name }}
                                     </a>
-                                    <button type="button" onclick="copyToClipboard('{{ $vhost->server_name }}')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="Copiar server_name">
+                                    <button type="button" onclick="copyToClipboard('{{ $vhost->server_name }}')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="{{ __('Copiar server_name') }}">
                                         <i class="fas fa-copy text-xs"></i>
                                     </button>
                                 </div>
@@ -151,10 +151,10 @@
                             <td class="px-4 py-3.5">
                                 <div class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
                                     <span class="truncate max-w-[180px]">{{ $vhost->document_root }}</span>
-                                    <button type="button" onclick="copyToClipboard('{{ addslashes($vhost->document_root) }}')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="Copiar document_root">
+                                    <button type="button" onclick="copyToClipboard('{{ addslashes($vhost->document_root) }}')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="{{ __('Copiar document_root') }}">
                                         <i class="fas fa-copy text-xs"></i>
                                     </button>
-                                    <button type="button" onclick="openInVSCode('{{ $vhost->document_root }}')" class="text-blue-400 hover:text-blue-600 transition-colors" title="Abrir no VS Code">
+                                    <button type="button" onclick="openInVSCode('{{ $vhost->document_root }}')" class="text-blue-400 hover:text-blue-600 transition-colors" title="{{ __('Abrir no VS Code') }}">
                                         <i class="fas fa-code text-xs"></i>
                                     </button>
                                 </div>
@@ -164,17 +164,17 @@
                             </td>
                             <td class="px-4 py-3.5 text-center">
                                 @if ($vhost->ssl_enabled)
-                                    <span class="badge-green"><i class="fas fa-lock"></i> HTTPS</span>
+                                    <span class="badge-green"><i class="fas fa-lock"></i> {{ __('HTTPS') }}</span>
                                 @else
-                                    <span class="badge-gray"><i class="fas fa-globe"></i> HTTP</span>
+                                    <span class="badge-gray"><i class="fas fa-globe"></i> {{ __('HTTP') }}</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3.5 text-center">
                                 @if ($vhost->ssl_enabled)
                                     @if ($certStatus[$vhost->server_name] ?? false)
-                                        <span class="text-emerald-500" title="Certificado existe"><i class="fas fa-check-circle"></i></span>
+                                        <span class="text-emerald-500" title="{{ __('Certificado existe') }}"><i class="fas fa-check-circle"></i></span>
                                     @else
-                                        <span class="text-red-400" title="Certificado não encontrado"><i class="fas fa-exclamation-circle"></i></span>
+                                        <span class="text-red-400" title="{{ __('Certificado não encontrado') }}"><i class="fas fa-exclamation-circle"></i></span>
                                     @endif
                                 @else
                                     <span class="text-gray-300 dark:text-gray-600">—</span>
@@ -183,42 +183,42 @@
                             <td class="px-4 py-3.5 text-center font-mono text-sm text-gray-700 dark:text-gray-300">{{ $vhost->port }}</td>
                             <td class="px-4 py-3.5 text-center">
                                 <form action="{{ route('virtual-hosts.toggle', $vhost) }}" method="POST" class="inline"
-                                      onsubmit="return confirm('{{ $vhost->active ? 'Desativar' : 'Ativar' }} {{ $vhost->server_name }}?')">
+                                      onsubmit="return confirm('{{ $vhost->active ? __('Desativar') : __('Ativar') }} {{ $vhost->server_name }}?')">
                                     @csrf
-                                    <button type="submit" class="toggle {{ $vhost->active ? 'toggle-on' : 'toggle-off' }}" title="{{ $vhost->active ? 'Desativar' : 'Ativar' }}">
+                                    <button type="submit" class="toggle {{ $vhost->active ? 'toggle-on' : 'toggle-off' }}" title="{{ $vhost->active ? __('Desativar') : __('Ativar') }}">
                                         <span class="toggle-dot"></span>
                                     </button>
                                 </form>
                             </td>
                             <td class="px-4 py-3.5 text-center">
                                 @if (in_array($vhost->server_name, $apacheNames ?? []))
-                                    <span class="text-emerald-600 dark:text-emerald-400 text-xs font-medium"><i class="fas fa-check-circle"></i> Sim</span>
+                                    <span class="text-emerald-600 dark:text-emerald-400 text-xs font-medium"><i class="fas fa-check-circle"></i> {{ __('Sim') }}</span>
                                 @else
-                                    <span class="text-red-400 dark:text-red-400 text-xs font-medium"><i class="fas fa-times-circle"></i> Não</span>
+                                    <span class="text-red-400 dark:text-red-400 text-xs font-medium"><i class="fas fa-times-circle"></i> {{ __('Não') }}</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3.5 text-right whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-1">
-                                    <a href="{{ route('virtual-hosts.show', $vhost) }}" title="Ver detalhes" class="btn-ghost btn-xs p-1.5">
+                                    <a href="{{ route('virtual-hosts.show', $vhost) }}" title="{{ __('Ver detalhes') }}" class="btn-ghost btn-xs p-1.5">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('virtual-hosts.edit', $vhost) }}" title="Editar" class="btn-ghost btn-xs p-1.5 text-blue-600 dark:text-blue-400">
+                                    <a href="{{ route('virtual-hosts.edit', $vhost) }}" title="{{ __('Editar') }}" class="btn-ghost btn-xs p-1.5 text-blue-600 dark:text-blue-400">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     @if ($vhost->ssl_enabled)
                                     <form action="{{ route('virtual-hosts.regenerate-cert', $vhost) }}" method="POST" class="inline"
-                                          onsubmit="return confirm('Regenerar certificado SSL de {{ $vhost->server_name }}?')">
+                                          onsubmit="return confirm('{{ __('Regenerar certificado SSL de') }} {{ $vhost->server_name }}?')">
                                         @csrf
-                                        <button type="submit" class="btn-ghost btn-xs p-1.5 text-amber-600 dark:text-amber-400" title="Regenerar certificado">
+                                        <button type="submit" class="btn-ghost btn-xs p-1.5 text-amber-600 dark:text-amber-400" title="{{ __('Regenerar certificado') }}">
                                             <i class="fas fa-certificate"></i>
                                         </button>
                                     </form>
                                     @endif
                                     <form action="{{ route('virtual-hosts.destroy', $vhost) }}" method="POST" class="inline"
-                                          onsubmit="return confirm('Excluir {{ $vhost->server_name }}? Isso remove o hosts, certificado SSL e config do Apache.')">
+                                          onsubmit="return confirm('{{ __('Excluir') }} {{ $vhost->server_name }}? {{ __('Isso remove o hosts, certificado SSL e config do Apache.') }}')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-ghost btn-xs p-1.5 text-red-600 dark:text-red-400" title="Excluir">
+                                        <button type="submit" class="btn-ghost btn-xs p-1.5 text-red-600 dark:text-red-400" title="{{ __('Excluir') }}">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </form>
@@ -231,9 +231,9 @@
                                 <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100 text-gray-400 mb-3 dark:bg-gray-700">
                                     <i class="fas fa-globe text-xl"></i>
                                 </div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Nenhum virtual host cadastrado ainda.</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ __('Nenhum virtual host cadastrado ainda.') }}</p>
             <a href="{{ route('virtual-hosts.create') }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus-circle"></i> Criar o primeiro
+                                    <i class="fas fa-plus-circle"></i> {{ __('Criar o primeiro') }}
                                 </a>
                             </td>
                         </tr>
@@ -265,7 +265,7 @@
             document.getElementById('batch-count').textContent = checked.length;
         }
         function batchAction(action) {
-            if (!confirm('Tem certeza que deseja ' + (action === 'activate' ? 'ativar' : action === 'deactivate' ? 'desativar' : 'excluir') + ' os vhosts selecionados?')) return;
+            if (!confirm('{{ __('Tem certeza que deseja') }} ' + (action === 'activate' ? '{{ __('ativar') }}' : action === 'deactivate' ? '{{ __('desativar') }}' : '{{ __('excluir') }}') + ' {{ __('os vhosts selecionados?') }}')) return;
             var checked = document.querySelectorAll('.batch-checkbox:checked');
             var container = document.getElementById('batch-ids-container');
             container.innerHTML = '';

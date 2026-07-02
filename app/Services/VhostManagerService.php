@@ -61,6 +61,7 @@ class VhostManagerService
         }
 
         Cache::forget('apache_running');
+        Cache::forget('apache_config_test');
 
         try {
             $restart = $this->apache->restart();
@@ -74,7 +75,7 @@ class VhostManagerService
         }
 
         if ($restart['success']) {
-            return ['type' => 'success', 'message' => 'Apache reiniciado automaticamente.'];
+            return ['type' => 'success', 'message' => __('Apache reiniciado automaticamente.')];
         }
 
         $msg = $restart['output'];

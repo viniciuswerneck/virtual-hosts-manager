@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Histórico de Atividades')
+@section('title', __('Histórico de Atividades'))
 
 @section('content')
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight"><i class="fas fa-history text-blue-500 mr-2"></i>Histórico de Atividades</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Registro de todas as operações realizadas no sistema</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight"><i class="fas fa-history text-blue-500 mr-2"></i>{{ __('Histórico de Atividades') }}</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('Registro de todas as operações realizadas no sistema') }}</p>
     </div>
 
     <div class="card overflow-hidden">
@@ -13,10 +13,10 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="bg-gray-50/80 dark:bg-gray-800/80 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        <th class="text-left px-4 py-3.5">Data/Hora</th>
-                        <th class="text-left px-4 py-3.5">Ação</th>
-                        <th class="text-left px-4 py-3.5">Descrição</th>
-                        <th class="text-left px-4 py-3.5 hidden md:table-cell">IP</th>
+                        <th class="text-left px-4 py-3.5">{{ __('Data/Hora') }}</th>
+                        <th class="text-left px-4 py-3.5">{{ __('Ação') }}</th>
+                        <th class="text-left px-4 py-3.5">{{ __('Descrição') }}</th>
+                        <th class="text-left px-4 py-3.5 hidden md:table-cell">{{ __('IP') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700/50">
@@ -57,7 +57,7 @@
                                 <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100 text-gray-400 mb-3 dark:bg-gray-700">
                                     <i class="fas fa-history text-xl"></i>
                                 </div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Nenhuma atividade registrada ainda.</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Nenhuma atividade registrada ainda.') }}</p>
                             </td>
                         </tr>
                     @endforelse
