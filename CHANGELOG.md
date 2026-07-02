@@ -7,6 +7,29 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.4.0] — 2026-07-02
+
+### Added
+- **i18n / Multi-language**: suporte a português, inglês e espanhol com seletor de idioma na top bar
+- **SetLocale middleware**: persiste o locale escolhido via sessão
+- **Footer**: "Desenvolvido por Werneck Lab" no rodapé de todas as páginas
+
+### Changed
+- All hardcoded Portuguese strings wrapped with `__()` for translation support
+- **Performance**: cache de 300s para `SettingsServiceProvider` (elimina `SELECT * FROM settings` em toda request)
+- **Performance**: cache de 300s para verificação do Vite manifest (elimina `file_exists()` duplicado)
+- **Performance**: cache de 60s para `parseExisting()` (elimina file I/O + regex no Dashboard e listagem)
+- **Performance**: cache de 60s para `apache_pid_count` e `apache_config_test`
+- **Performance**: cache de 120s para `cert_status_*` por vhost
+- **Performance**: leitura de logs otimizada com `SplFileObject::tailFile()` em vez de `File::get()` completo
+- **UX**: busca de vhosts agora só submete ao pressionar Enter (removeu auto-submit com 400ms)
+
+### Fixed
+- Test `ApacheServiceTest::test_write_config_throws_on_permission_error` corrigido (mock de `File::exists()`)
+- Sintaxe PHP em services com `'])` incorreto do script de tradução
+
+---
+
 ## [1.3.0] — 2026-07-02
 
 ### Added
@@ -75,6 +98,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Laravel 13 + PHP 8.3 + SQLite
 - Tailwind CSS v4 + Vite 8 + Font Awesome 6
 
+[1.4.0]: https://github.com/viniciuswerneck/virtual-hosts-manager/releases/tag/v1.4.0
 [1.3.0]: https://github.com/viniciuswerneck/virtual-hosts-manager/releases/tag/v1.3.0
 [1.2.0]: https://github.com/viniciuswerneck/virtual-hosts-manager/releases/tag/v1.2.0
 [1.1.0]: https://github.com/viniciuswerneck/virtual-hosts-manager/releases/tag/v1.1.0
