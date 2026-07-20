@@ -29,3 +29,6 @@ nul
 /public/mkcert/rootCA-key.pem
 /storage/app/mkcert/
 /database/sqlite.db
+/tmp_query*.php
+boost.json
+opencode.json
