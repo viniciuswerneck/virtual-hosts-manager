@@ -18,13 +18,19 @@ class MysqlService
 
     private string $service;
 
+    private string $mysqlBin;
+
+    private string $mysqldumpBin;
+
     public function __construct()
     {
         $this->host = config('virtualhosts.mysql_host', '127.0.0.1');
         $this->port = (int) config('virtualhosts.mysql_port', 3306);
         $this->username = config('virtualhosts.mysql_username', 'root');
         $this->password = config('virtualhosts.mysql_password', '');
-        $this->service = config('virtualhosts.mysql_service', 'MySQL80');
+        $this->service = config('virtualhosts.mysql_service', 'MySQL95');
+        $this->mysqlBin = config('virtualhosts.mysql_bin', 'mysql');
+        $this->mysqldumpBin = config('virtualhosts.mysqldump_bin', 'mysqldump');
     }
 
     private function buildAuth(): string
@@ -39,12 +45,12 @@ class MysqlService
 
     private function runMysql(string $args, ?string $stdin = null): array
     {
-        $cmd = sprintf('mysql -h%s -P%d %s %s 2>&1', $this->host, $this->port, $this->buildAuth(), $args);
+        $cmd = sprintf('"%s" -h%s -P%d %s %s 2>&1', $this->mysqlBin, $this->host, $this->port, $this->buildAuth(), $args);
 
         if ($stdin !== null) {
             $tmpFile = tempnam(sys_get_temp_dir(), 'sql_');
             File::put($tmpFile, $stdin);
-            $cmd = sprintf('mysql -h%s -P%d %s %s < "%s" 2>&1', $this->host, $this->port, $this->buildAuth(), $args, $tmpFile);
+            $cmd = sprintf('"%s" -h%s -P%d %s %s < "%s" 2>&1', $this->mysqlBin, $this->host, $this->port, $this->buildAuth(), $args, $tmpFile);
         }
 
         $output = [];
@@ -60,7 +66,7 @@ class MysqlService
 
     private function runMysqldump(string $args): array
     {
-        $cmd = sprintf('mysqldump -h%s -P%d %s %s 2>&1', $this->host, $this->port, $this->buildAuth(), $args);
+        $cmd = sprintf('"%s" -h%s -P%d %s %s 2>&1', $this->mysqldumpBin, $this->host, $this->port, $this->buildAuth(), $args);
 
         $output = [];
         $exitCode = 0;

@@ -22,4 +22,6 @@ return [
     'mysql_username' => env('MYSQL_USERNAME', 'root'),
     'mysql_password' => env('MYSQL_PASSWORD', ''),
     'mysql_service' => env('MYSQL_SERVICE', 'MySQL95'),
+    'mysql_bin' => env('MYSQL_BIN', 'C:/Program Files/MySQL/MySQL Server 9.5/bin/mysql.exe'),
+    'mysqldump_bin' => env('MYSQLDUMP_BIN', 'C:/Program Files/MySQL/MySQL Server 9.5/bin/mysqldump.exe'),
 ];
