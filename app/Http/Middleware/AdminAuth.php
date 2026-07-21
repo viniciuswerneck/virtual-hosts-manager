@@ -12,7 +12,7 @@ class AdminAuth
     {
         $password = config('app.admin_password');
 
-        if (empty($password)) {
+        if (empty($password) && ! app()->environment('production')) {
             return $next($request);
         }
 

@@ -38,7 +38,7 @@ Route::post('/locale', function (Request $request) {
 Route::post('/admin/login', function (Request $request) {
     $password = config('app.admin_password');
 
-    if (empty($password)) {
+    if (empty($password) && ! app()->environment('production')) {
         return redirect()->route('dashboard');
     }
 
@@ -47,6 +47,11 @@ Route::post('/admin/login', function (Request $request) {
 
         return redirect()->intended(route('dashboard'));
     }
+
+    Log::warning('Tentativa de login falhou', [
+        'ip' => $request->ip(),
+        'user_agent' => $request->userAgent(),
+    ]);
 
     return back()->with('error', 'Senha incorreta.');
 })->name('admin.login.post')->middleware('throttle:5,1');

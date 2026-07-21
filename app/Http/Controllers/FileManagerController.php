@@ -7,11 +7,39 @@ use Illuminate\Support\Facades\File;
 
 class FileManagerController extends Controller
 {
+    private function isWithinRoot(string $path): bool
+    {
+        $root = rtrim(str_replace('\\', '/', config('virtualhosts.default_document_root')), '/');
+        $normalized = rtrim(str_replace('\\', '/', $path), '/');
+
+        $realRoot = realpath($root);
+        if (! $realRoot) {
+            return false;
+        }
+
+        $realPath = realpath($normalized);
+        if ($realPath) {
+            return str_starts_with($realPath, $realRoot);
+        }
+
+        $realParent = realpath(dirname($normalized));
+        if ($realParent) {
+            return str_starts_with($realParent, $realRoot);
+        }
+
+        return false;
+    }
+
     public function index(Request $request)
     {
         $path = $request->input('path', config('virtualhosts.default_document_root'));
         $path = str_replace(['\\', '..'], '/', $path);
         $path = rtrim($path, '/');
+
+        if (! $this->isWithinRoot($path)) {
+            return redirect()->route('file-manager.index', ['path' => config('virtualhosts.default_document_root')])
+                ->with('error', __('Acesso negado.'));
+        }
 
         if (! File::isDirectory($path)) {
             return redirect()->route('file-manager.index', ['path' => config('virtualhosts.default_document_root')])
@@ -45,6 +73,10 @@ class FileManagerController extends Controller
 
         if (! $filePath || ! File::exists($filePath) || File::isDirectory($filePath)) {
             return redirect()->back()->with('error', __('Arquivo não encontrado.'));
+        }
+
+        if (! $this->isWithinRoot($filePath)) {
+            return redirect()->back()->with('error', __('Acesso negado.'));
         }
 
         $ext = pathinfo($filePath, PATHINFO_EXTENSION);

@@ -123,7 +123,21 @@ class ApacheLogController extends Controller
 
         return $result;
     }
-}
+
+    private function parseLog(string $path, string $level, string $search, int $maxLines): array
+    {
+        $entries = [];
+        $levelCounts = ['error' => 0, 'warn' => 0, 'notice' => 0, 'info' => 0, 'debug' => 0];
+        $moduleSet = [];
+
+        $pattern = '/^\[([^\]]+)\]\s+\[([^\]]*)\]\s+\[([^\]]*)\](?:\s+\[pid\s+(\d+)\])?(?:\s+\[client\s+([^\]]+)\])?\s+(.*)$/';
+
+        $lines = $this->tailFile($path, $maxLines * 3);
+
+        foreach ($lines as $trimmed) {
+            if ($trimmed === '') {
+                continue;
+            }
 
             $parsed = null;
             $logLevel = 'info';

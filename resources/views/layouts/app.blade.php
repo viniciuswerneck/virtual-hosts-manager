@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="classic-blue">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,10 +16,25 @@
         <script src="https://cdn.tailwindcss.com"></script>
     @endif
     <script>
-        if (localStorage.getItem('theme') === 'dark' ||
-            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        }
+        (function() {
+            var themes = ['classic-blue','forest-green','royal-purple','sunset-orange','rose-gold','midnight','deep-forest','neon-violet','ember','crimson'];
+            var lightThemes = ['classic-blue','forest-green','royal-purple','sunset-orange','rose-gold'];
+            var darkThemes = ['midnight','deep-forest','neon-violet','ember','crimson'];
+            var saved = localStorage.getItem('theme');
+
+            // Migration: 'light' → 'classic-blue', 'dark' → 'midnight'
+            if (saved === 'light') saved = 'classic-blue';
+            else if (saved === 'dark') saved = 'midnight';
+
+            if (!saved || !themes.includes(saved)) {
+                saved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'midnight' : 'classic-blue';
+            }
+
+            var isDark = darkThemes.includes(saved);
+            if (isDark) document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-theme', saved);
+            localStorage.setItem('theme', saved);
+        })();
     </script>
     <script>
         (function(){
@@ -48,17 +63,10 @@
         textarea:focus,
         select:focus {
             outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
         }
-        .dark input:not([type="checkbox"]):not([type="radio"]):focus,
-        .dark textarea:focus,
-        .dark select:focus {
-            border-color: #60a5fa;
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
-        }
-        #sidebar { transition: width .25s cubic-bezier(.16,1,.3,1), transform .25s cubic-bezier(.16,1,.3,1); background: rgba(255,255,255,0.9); border-color: rgba(229,231,235,0.6); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.03); }
-        .dark #sidebar { background: rgba(17,24,39,0.95); border-color: rgba(55,65,81,0.4); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        #sidebar { transition: width .25s cubic-bezier(.16,1,.3,1), transform .25s cubic-bezier(.16,1,.3,1); background: var(--sidebar-bg); border-color: var(--sidebar-border); box-shadow: 0 10px 15px -3px var(--sidebar-shadow), 0 4px 6px -2px rgba(0,0,0,0.03); }
         #sidebar .nav-label { transition: opacity .15s, width .15s; overflow: hidden; white-space: nowrap; }
         #sidebar.collapsed .nav-label { width: 0; opacity: 0; }
         #sidebar.collapsed { width: 4rem; }
@@ -81,22 +89,26 @@
         #sidebar.collapsed #sidebar-toggle { margin-left: 0; }
         #sidebar.collapsed .sidebar-link { justify-content: center; padding-left: 0; padding-right: 0; }
         .sidebar-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: 0.625rem; font-size: 0.8125rem; font-weight: 500; transition: all 0.15s, padding .25s cubic-bezier(.16,1,.3,1); white-space: nowrap; }
-        .sidebar-link:hover { background: rgba(37, 99, 235, 0.08); color: #2563eb; }
-        .dark .sidebar-link:hover { background: rgba(249, 115, 22, 0.1); color: #f97316; }
-        .sidebar-link-active { background: rgba(37, 99, 235, 0.12); color: #2563eb; font-weight: 600; }
-        .dark .sidebar-link-active { background: rgba(249, 115, 22, 0.12); color: #f97316; }
+        .sidebar-link:hover { background: var(--nav-hover-bg); color: var(--accent); }
+        .sidebar-link-active { background: var(--nav-active-bg); color: var(--nav-active-color); font-weight: 600; }
         .sidebar-icon { display: flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; flex-shrink: 0; font-size: 0.875rem; }
-        .dark #sidebar::-webkit-scrollbar-thumb { background: #4b5563; }
-        .dark #sidebar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
-        #page-loader { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: #f3f6fc; transition: opacity .35s ease; }
-        .dark #page-loader { background: #1a1a2e; }
+        #page-loader { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: var(--page-bg); transition: opacity .35s ease; }
         #page-loader.hide { opacity: 0; pointer-events: none; }
-        .loader-spinner { width: 32px; height: 32px; border: 3px solid rgba(37,99,235,0.15); border-top-color: #2563eb; border-radius: 50%; animation: spin .7s linear infinite; }
-        .dark .loader-spinner { border-color: rgba(249,115,22,0.15); border-top-color: #f97316; }
+        .loader-spinner { width: 32px; height: 32px; border: 3px solid var(--loader-border); border-top-color: var(--loader-top); border-radius: 50%; animation: spin .7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Theme selector dropdown */
+        .theme-dropdown { position: relative; }
+        .theme-menu { display: none; position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 0.75rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15); padding: 0.75rem; z-index: 50; min-width: 220px; }
+        .theme-menu.show { display: block; }
+        .theme-menu-title { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.375rem; margin-bottom: 0.5rem; }
+        .theme-option { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+        .theme-option:hover { transform: scale(1.15); }
+        .theme-option.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.3); }
     </style>
 </head>
-<body class="bg-[#f3f6fc] dark:bg-[#1a1a2e] min-h-screen antialiased">
+<body class="min-h-screen antialiased" style="background-color: var(--page-bg);">
 
     <div id="page-loader"><div class="loader-spinner"></div></div>
 
@@ -156,7 +168,7 @@
 
     </aside>
 
-    <header id="topbar" class="fixed top-0 right-0 left-0 h-14 flex items-center justify-end gap-1 px-4 sm:px-6 border-b border-gray-200/60 dark:border-gray-700/30 bg-white/60 dark:bg-[#1a1a2e]/60 backdrop-blur-md z-40">
+    <header id="topbar" class="fixed top-0 right-0 left-0 h-14 flex items-center justify-end gap-1 px-4 sm:px-6 border-b border-gray-200/60 dark:border-gray-700/30 backdrop-blur-md z-40" style="background-color: var(--mica-bg);">
         <form action="{{ route('locale.set') }}" method="POST" class="flex items-center gap-1">
             @csrf
             @php $currentLocale = app()->getLocale(); @endphp
@@ -167,15 +179,23 @@
 
         <div class="w-px h-5 bg-gray-200 dark:bg-gray-700"></div>
 
-        <button onclick="toggleTheme()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="{{ __('Alternar tema') }}">
-            <svg id="sun-icon-topbar" class="w-3.5 h-3.5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-            </svg>
-            <svg id="moon-icon-topbar" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-            </svg>
-            <span>{{ __('Tema') }}</span>
-        </button>
+        <div class="theme-dropdown">
+            <button onclick="toggleThemeMenu()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="{{ __('Alternar tema') }}">
+                <svg id="sun-icon-topbar" class="w-3.5 h-3.5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                <svg id="moon-icon-topbar" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+                <span>{{ __('Tema') }}</span>
+            </button>
+            <div id="theme-menu" class="theme-menu">
+                <div class="theme-menu-title">{{ __('Claro') }}</div>
+                <div class="theme-grid" id="light-themes"></div>
+                <div class="theme-menu-title">{{ __('Escuro') }}</div>
+                <div class="theme-grid" id="dark-themes"></div>
+            </div>
+        </div>
 
         <div class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
             <i class="fas fa-server text-[10px]"></i>
@@ -291,18 +311,91 @@
             });
         }
 
-        function toggleTheme() {
-            const html = document.documentElement;
-            const isDark = html.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            updateIcons(isDark);
+        var themeDefs = [
+            { slug: 'classic-blue', color: '#2563eb', label: 'Classic Blue' },
+            { slug: 'forest-green', color: '#059669', label: 'Forest Green' },
+            { slug: 'royal-purple', color: '#7c3aed', label: 'Royal Purple' },
+            { slug: 'sunset-orange', color: '#ea580c', label: 'Sunset Orange' },
+            { slug: 'rose-gold', color: '#e11d48', label: 'Rose Gold' },
+            { slug: 'midnight', color: '#1a1a2e', label: 'Midnight' },
+            { slug: 'deep-forest', color: '#0a1f1a', label: 'Deep Forest' },
+            { slug: 'neon-violet', color: '#1a0a2e', label: 'Neon Violet' },
+            { slug: 'ember', color: '#1a1008', label: 'Ember' },
+            { slug: 'crimson', color: '#1a0a10', label: 'Crimson' }
+        ];
+        var lightSlugs = ['classic-blue','forest-green','royal-purple','sunset-orange','rose-gold'];
+        var darkSlugs = ['midnight','deep-forest','neon-violet','ember','crimson'];
+
+        function initThemeMenu() {
+            var lightGrid = document.getElementById('light-themes');
+            var darkGrid = document.getElementById('dark-themes');
+            if (!lightGrid || !darkGrid) return;
+
+            var current = localStorage.getItem('theme') || 'classic-blue';
+            var lightColors = { 'classic-blue':'#2563eb','forest-green':'#059669','royal-purple':'#7c3aed','sunset-orange':'#ea580c','rose-gold':'#e11d48' };
+            var darkColors = { 'midnight':'#60a5fa','deep-forest':'#34d399','neon-violet':'#a78bfa','ember':'#fb923c','crimson':'#fb7185' };
+
+            lightSlugs.forEach(function(slug) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'theme-option' + (current === slug ? ' active' : '');
+                btn.style.backgroundColor = lightColors[slug];
+                btn.title = slug.replace(/-/g, ' ').replace(/\b\w/g, function(l){ return l.toUpperCase(); });
+                btn.onclick = function() { setTheme(slug); };
+                lightGrid.appendChild(btn);
+            });
+
+            darkSlugs.forEach(function(slug) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'theme-option' + (current === slug ? ' active' : '');
+                btn.style.backgroundColor = darkColors[slug];
+                btn.title = slug.replace(/-/g, ' ').replace(/\b\w/g, function(l){ return l.toUpperCase(); });
+                btn.onclick = function() { setTheme(slug); };
+                darkGrid.appendChild(btn);
+            });
         }
 
-        function updateIcons(isDark) {
+        function setTheme(slug) {
+            var isDark = darkSlugs.includes(slug);
+            var html = document.documentElement;
+
+            html.classList.toggle('dark', isDark);
+            html.setAttribute('data-theme', slug);
+            localStorage.setItem('theme', slug);
+
             document.getElementById('sun-icon-topbar').classList.toggle('hidden', !isDark);
             document.getElementById('moon-icon-topbar').classList.toggle('hidden', isDark);
+
+            document.querySelectorAll('.theme-option').forEach(function(el) {
+                el.classList.remove('active');
+            });
+            var grids = document.querySelectorAll('.theme-grid');
+            grids.forEach(function(grid) {
+                var btns = grid.querySelectorAll('button');
+                btns.forEach(function(btn) {
+                    if (btn.title.toLowerCase().replace(/\s+/g, '-') === slug) {
+                        btn.classList.add('active');
+                    }
+                });
+            });
+
+            document.getElementById('theme-menu').classList.remove('show');
         }
-        updateIcons(document.documentElement.classList.contains('dark'));
+
+        function toggleThemeMenu() {
+            document.getElementById('theme-menu').classList.toggle('show');
+        }
+
+        document.addEventListener('click', function(e) {
+            var menu = document.getElementById('theme-menu');
+            var btn = e.target.closest('.theme-dropdown');
+            if (!btn && menu) menu.classList.remove('show');
+        });
+
+        initThemeMenu();
+        document.getElementById('sun-icon-topbar').classList.toggle('hidden', !document.documentElement.classList.contains('dark'));
+        document.getElementById('moon-icon-topbar').classList.toggle('hidden', document.documentElement.classList.contains('dark'));
 
         window.addEventListener('load', function () {
             document.getElementById('page-loader').classList.add('hide');
