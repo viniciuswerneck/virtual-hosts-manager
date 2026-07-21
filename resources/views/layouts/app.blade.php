@@ -124,6 +124,7 @@
             ['route' => 'file-manager.index', 'icon' => 'fas fa-folder-open', 'label' => __('Arquivos'), 'pattern' => 'file-manager.*'],
             ['route' => 'activity-logs.index', 'icon' => 'fas fa-history', 'label' => __('Auditoria'), 'pattern' => 'activity-logs.*'],
             ['route' => 'logs.index', 'icon' => 'fas fa-file-alt', 'label' => __('Logs'), 'pattern' => 'logs.*'],
+            ['route' => 'databases.index', 'icon' => 'fas fa-database', 'label' => __('Banco de Dados'), 'pattern' => 'databases.*'],
             ['route' => 'config.php.index', 'icon' => 'fab fa-php', 'label' => __('PHP'), 'pattern' => 'config.php.*'],
             ['route' => 'config.apache.index', 'icon' => 'fas fa-server', 'label' => __('Apache'), 'pattern' => 'config.apache.*'],
             ['route' => 'settings.index', 'icon' => 'fas fa-cog', 'label' => __('Sistema'), 'pattern' => 'settings.*'],

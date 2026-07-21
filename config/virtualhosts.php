@@ -17,4 +17,9 @@ return [
     'vscode_executable' => env('VSCODE_EXECUTABLE', 'code'),
     'php_ini_file' => env('PHP_INI_FILE', 'C:/php/php.ini'),
     'httpd_conf_file' => env('HTTPD_CONF_FILE', 'C:/Apache24/conf/httpd.conf'),
+    'mysql_host' => env('MYSQL_HOST', '127.0.0.1'),
+    'mysql_port' => env('MYSQL_PORT', '3306'),
+    'mysql_username' => env('MYSQL_USERNAME', 'root'),
+    'mysql_password' => env('MYSQL_PASSWORD', ''),
+    'mysql_service' => env('MYSQL_SERVICE', 'MySQL95'),
 ];

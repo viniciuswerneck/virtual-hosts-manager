@@ -4,6 +4,7 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ApacheLogController;
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\FileManagerController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\VirtualHostController;
@@ -115,4 +116,24 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/config/apache/module-toggle', [ConfigController::class, 'apacheToggleModule'])->name('config.apache.module-toggle');
     Route::post('/config/apache/test', [ConfigController::class, 'apacheTest'])->name('config.apache.test');
     Route::post('/config/apache/restart', [ConfigController::class, 'apacheRestart'])->name('config.apache.restart');
+
+    // MySQL Database Management
+    Route::get('/databases', [DatabaseController::class, 'index'])->name('databases.index');
+    Route::post('/databases', [DatabaseController::class, 'store'])->name('databases.store');
+    Route::delete('/databases/{database}', [DatabaseController::class, 'destroy'])->name('databases.destroy');
+    Route::get('/databases/{database}/tables', [DatabaseController::class, 'tables'])->name('databases.tables');
+    Route::get('/databases/{database}/tables/{table}/structure', [DatabaseController::class, 'tableStructure'])->name('databases.table-structure');
+    Route::get('/databases/{database}/tables/{table}', [DatabaseController::class, 'tableData'])->name('databases.table-data');
+    Route::post('/databases/{database}/tables/{table}/truncate', [DatabaseController::class, 'truncateTable'])->name('databases.truncate-table');
+    Route::delete('/databases/{database}/tables/{table}', [DatabaseController::class, 'dropTable'])->name('databases.drop-table');
+    Route::get('/databases/query', [DatabaseController::class, 'queryForm'])->name('databases.query-form');
+    Route::post('/databases/{database}/query', [DatabaseController::class, 'query'])->name('databases.query');
+    Route::get('/databases/{database}/export', [DatabaseController::class, 'exportDatabase'])->name('databases.export');
+    Route::get('/databases/{database}/tables/{table}/export', [DatabaseController::class, 'exportTable'])->name('databases.export-table');
+    Route::get('/databases/{database}/import', [DatabaseController::class, 'importForm'])->name('databases.import-form');
+    Route::post('/databases/{database}/import', [DatabaseController::class, 'import'])->name('databases.import');
+    Route::get('/mysql/status', [DatabaseController::class, 'serviceStatus'])->name('mysql.status');
+    Route::post('/mysql/start', [DatabaseController::class, 'serviceStart'])->name('mysql.start');
+    Route::post('/mysql/stop', [DatabaseController::class, 'serviceStop'])->name('mysql.stop');
+    Route::post('/mysql/restart', [DatabaseController::class, 'serviceRestart'])->name('mysql.restart');
 });

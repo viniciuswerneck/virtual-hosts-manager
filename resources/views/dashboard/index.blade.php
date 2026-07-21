@@ -19,6 +19,29 @@
                     <i class="fas fa-redo-alt"></i> {{ __('Reiniciar Apache') }}
                 </button>
             </form>
+            @php
+                $mysqlService = app(\App\Services\MysqlService::class);
+                $mysqlAvailable = $mysqlService->isAvailable();
+                $mysqlRunning = $mysqlAvailable ? $mysqlService->isRunning() : false;
+            @endphp
+            @if ($mysqlAvailable)
+                @if ($mysqlRunning)
+                    <form action="{{ route('mysql.restart') }}" method="POST" class="restart-form inline"
+                          onsubmit="return confirm('{{ __("Reiniciar MySQL agora?") }}')">
+                        @csrf
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="fas fa-database"></i> {{ __('Reiniciar MySQL') }}
+                        </button>
+                    </form>
+                @else
+                    <form action="{{ route('mysql.start') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-play"></i> {{ __('Iniciar MySQL') }}
+                        </button>
+                    </form>
+                @endif
+            @endif
         </div>
     </div>
 
@@ -86,6 +109,37 @@
                 <p class="mt-1.5 text-xs text-gray-400 dark:text-gray-500 text-right">{{ $apachePidCount }} {{ __('processo(s)') }}</p>
             @endif
         </div>
+    </div>
+
+    <!-- Service Status Bar -->
+    <div class="flex gap-3 mb-8 flex-wrap">
+        <div class="card px-4 py-2.5 flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full {{ $apacheOnline ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
+            <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Apache</span>
+            <span class="text-xs {{ $apacheOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' }}">{{ $apacheOnline ? 'Online' : 'Offline' }}</span>
+        </div>
+        @if ($mysqlAvailable)
+            <div class="card px-4 py-2.5 flex items-center gap-3">
+                <span class="w-2 h-2 rounded-full {{ $mysqlRunning ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">MySQL</span>
+                <span class="text-xs {{ $mysqlRunning ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' }}">{{ $mysqlRunning ? 'Online' : 'Offline' }}</span>
+                @if ($mysqlRunning)
+                    <form action="{{ route('mysql.restart') }}" method="POST" class="restart-form inline" onsubmit="return confirm('{{ __('Reiniciar MySQL?') }}')">
+                        @csrf
+                        <button type="submit" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="{{ __('Reiniciar') }}">
+                            <i class="fas fa-sync text-[10px]"></i>
+                        </button>
+                    </form>
+                @else
+                    <form action="{{ route('mysql.start') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="text-xs text-emerald-500 hover:text-emerald-700" title="{{ __('Iniciar') }}">
+                            <i class="fas fa-play text-[10px]"></i>
+                        </button>
+                    </form>
+                @endif
+            </div>
+        @endif
     </div>
 
     @if ($sslWithoutCert->isNotEmpty() || $notInApache->isNotEmpty())
