@@ -45,34 +45,36 @@ class MysqlService
 
     private function runMysql(string $args, ?string $stdin = null): array
     {
-        $cmd = sprintf('"%s" -h%s -P%d %s %s 2>&1', $this->mysqlBin, $this->host, $this->port, $this->buildAuth(), $args);
+        $bin = trim($this->mysqlBin, '"');
+        $cmd = sprintf('"%s" -h%s -P%d %s %s 2>&1', $bin, $this->host, $this->port, $this->buildAuth(), $args);
 
         if ($stdin !== null) {
             $tmpFile = tempnam(sys_get_temp_dir(), 'sql_');
             File::put($tmpFile, $stdin);
-            $cmd = sprintf('"%s" -h%s -P%d %s %s < "%s" 2>&1', $this->mysqlBin, $this->host, $this->port, $this->buildAuth(), $args, $tmpFile);
+            $cmd = sprintf('"%s" -h%s -P%d %s %s < "%s" 2>&1', $bin, $this->host, $this->port, $this->buildAuth(), $args, $tmpFile);
         }
 
-        $output = [];
-        $exitCode = 0;
-        exec($cmd, $output, $exitCode);
+        $output = shell_exec($cmd);
 
         if ($stdin !== null && file_exists($tmpFile)) {
             @unlink($tmpFile);
         }
 
-        return ['success' => $exitCode === 0, 'output' => implode("\n", $output), 'exit_code' => $exitCode];
+        $success = $output !== null && ! str_contains($output, 'ERROR');
+        $exitCode = $success ? 0 : 1;
+
+        return ['success' => $success, 'output' => trim($output ?? ''), 'exit_code' => $exitCode];
     }
 
     private function runMysqldump(string $args): array
     {
-        $cmd = sprintf('"%s" -h%s -P%d %s %s 2>&1', $this->mysqldumpBin, $this->host, $this->port, $this->buildAuth(), $args);
+        $bin = trim($this->mysqldumpBin, '"');
+        $cmd = sprintf('"%s" -h%s -P%d %s %s 2>&1', $bin, $this->host, $this->port, $this->buildAuth(), $args);
 
-        $output = [];
-        $exitCode = 0;
-        exec($cmd, $output, $exitCode);
+        $output = shell_exec($cmd);
+        $success = $output !== null && ! str_contains($output, 'ERROR');
 
-        return ['success' => $exitCode === 0, 'output' => implode("\n", $output), 'exit_code' => $exitCode];
+        return ['success' => $success, 'output' => trim($output ?? ''), 'exit_code' => $success ? 0 : 1];
     }
 
     public function isAvailable(): bool
