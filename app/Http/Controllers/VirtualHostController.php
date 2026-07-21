@@ -90,7 +90,7 @@ class VirtualHostController extends Controller
             if (($data['ssl_enabled'] ?? true) && ! $mkcert->certExists($serverName)) {
                 $result = $mkcert->generate($serverName);
                 if (! $result['success']) {
-                    throw new RuntimeException(__('Erro ao gerar certificado SSL: ') . ($result['output'] ?? __('erro desconhecido')));
+                    throw new RuntimeException(__('Erro ao gerar certificado SSL: ').($result['output'] ?? __('erro desconhecido')));
                 }
                 $certGenerated = true;
             }
@@ -120,6 +120,62 @@ class VirtualHostController extends Controller
                 }
             }
 
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    public function clone(VirtualHost $virtualHost)
+    {
+        return view('virtual-hosts.clone', ['original' => $virtualHost]);
+    }
+
+    public function cloneStore(
+        Request $request,
+        VirtualHost $original,
+        HostsFileService $hosts,
+        MkcertService $mkcert,
+        VhostManagerService $manager,
+        ActivityLogService $logger,
+    ) {
+        $request->validate([
+            'server_name' => [
+                'required',
+                'regex:/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/',
+                Rule::unique('virtual_hosts', 'server_name'),
+            ],
+        ]);
+
+        $serverName = $request->input('server_name');
+
+        try {
+            $vhost = VirtualHost::create([
+                'server_name' => $serverName,
+                'server_aliases' => $original->server_aliases,
+                'document_root' => $request->input('document_root', $original->document_root),
+                'ssl_enabled' => $original->ssl_enabled,
+                'port' => $original->port,
+                'active' => false,
+                'template' => $original->template,
+                'php_version' => $original->php_version,
+                'notes' => __('Clonado de :name', ['name' => $original->server_name]),
+                'github_url' => $original->github_url,
+            ]);
+
+            $hosts->addEntry($serverName);
+
+            if ($original->ssl_enabled && ! $mkcert->certExists($serverName)) {
+                $mkcert->generate($serverName);
+            }
+
+            $manager->applyApacheConfig();
+
+            $logger->log('created', __('Virtual host :name clonado de :original', ['name' => $serverName, 'original' => $original->server_name]), $vhost);
+
+            return redirect()->route('virtual-hosts.index')
+                ->with('success', __('Virtual host :name clonado com sucesso!', ['name' => $serverName]));
+        } catch (\Throwable $e) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', $e->getMessage());
@@ -165,7 +221,7 @@ class VirtualHostController extends Controller
             $logger->log('updated', __('Virtual host :name atualizado', ['name' => $newName]), $virtualHost);
 
             return redirect()->route('virtual-hosts.index')
-                ->with($result['type'], __('Virtual host :name atualizado com sucesso!|', ['name' => $newName]) . $result['message']);
+                ->with($result['type'], __('Virtual host :name atualizado com sucesso!|', ['name' => $newName]).$result['message']);
         } catch (\Throwable $e) {
             return redirect()->back()
                 ->withInput()
@@ -193,7 +249,7 @@ class VirtualHostController extends Controller
             $logger->log('deleted', __('Virtual host :name excluído', ['name' => $name]), $virtualHost);
 
             return redirect()->route('virtual-hosts.index')
-                ->with($result['type'], __('Virtual host :name excluído com sucesso!|', ['name' => $name]) . $result['message']);
+                ->with($result['type'], __('Virtual host :name excluído com sucesso!|', ['name' => $name]).$result['message']);
         } catch (\Throwable $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -212,7 +268,7 @@ class VirtualHostController extends Controller
             $configWritten = true;
             $apacheRestarted = $result['type'] === 'success';
         } catch (\Throwable $e) {
-            return redirect()->back()->with('warning', __('Vhost alternado no banco, mas erro ao aplicar config: ') . $e->getMessage());
+            return redirect()->back()->with('warning', __('Vhost alternado no banco, mas erro ao aplicar config: ').$e->getMessage());
         }
 
         Cache::forget('apache_running');
@@ -260,7 +316,7 @@ class VirtualHostController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', __('Erro ao processar operação em lote: ') . $e->getMessage());
+            return redirect()->back()->with('error', __('Erro ao processar operação em lote: ').$e->getMessage());
         }
 
         if ($count === 0) {
@@ -316,7 +372,7 @@ class VirtualHostController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', __('Erro ao excluir em lote: ') . $e->getMessage());
+            return redirect()->back()->with('error', __('Erro ao excluir em lote: ').$e->getMessage());
         }
 
         try {
@@ -438,7 +494,7 @@ class VirtualHostController extends Controller
         } catch (\Throwable $e) {
             File::deleteDirectory($tempDir);
 
-            return redirect()->back()->with('error', __('Erro ao exportar backup: ') . $e->getMessage());
+            return redirect()->back()->with('error', __('Erro ao exportar backup: ').$e->getMessage());
         }
     }
 
@@ -551,7 +607,7 @@ class VirtualHostController extends Controller
         } catch (\Throwable $e) {
             File::deleteDirectory($tempDir);
 
-            return redirect()->back()->with('error', __('Erro ao restaurar backup: ') . $e->getMessage());
+            return redirect()->back()->with('error', __('Erro ao restaurar backup: ').$e->getMessage());
         }
     }
 
@@ -586,7 +642,7 @@ class VirtualHostController extends Controller
             Cache::forget('apache_vhosts_parsed');
 
             return redirect()->route('virtual-hosts.index')
-                ->with('error', __('Erro de sintaxe no Apache: ') . $test['output']);
+                ->with('error', __('Erro de sintaxe no Apache: ').$test['output']);
         }
 
         $result = $apache->restart();
@@ -620,6 +676,6 @@ class VirtualHostController extends Controller
         }
 
         return redirect()->route('virtual-hosts.index')
-            ->with('error', __('Erro ao gerar certificado: ') . $result['output']);
+            ->with('error', __('Erro ao gerar certificado: ').$result['output']);
     }
 }

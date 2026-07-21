@@ -3,9 +3,48 @@
 @section('title', __('Histórico de Atividades'))
 
 @section('content')
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight"><i class="fas fa-history text-blue-500 mr-2"></i>{{ __('Histórico de Atividades') }}</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('Registro de todas as operações realizadas no sistema') }}</p>
+    <div class="mb-6 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight"><i class="fas fa-history text-blue-500 mr-2"></i>{{ __('Histórico de Atividades') }}</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('Registro de todas as operações realizadas no sistema') }}</p>
+        </div>
+        <a href="{{ route('activity-logs.export', request()->query()) }}" class="btn-secondary btn-sm">
+            <i class="fas fa-download"></i> {{ __('Exportar CSV') }}
+        </a>
+    </div>
+
+    <div class="card p-4 mb-4">
+        <form action="{{ route('activity-logs.index') }}" method="GET" class="flex flex-wrap gap-3 items-end">
+            <div>
+                <label class="label text-xs mb-1">{{ __('Ação') }}</label>
+                <select name="action" class="input text-sm py-1.5">
+                    <option value="">{{ __('Todas') }}</option>
+                    @foreach ($actions as $action)
+                        <option value="{{ $action }}" {{ request('action') === $action ? 'selected' : '' }}>{{ $action }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="label text-xs mb-1">{{ __('Buscar') }}</label>
+                <input type="text" name="search" value="{{ request('search') }}" class="input text-sm py-1.5" placeholder="{{ __('Descrição...') }}">
+            </div>
+            <div>
+                <label class="label text-xs mb-1">{{ __('De') }}</label>
+                <input type="date" name="date_from" value="{{ request('date_from') }}" class="input text-sm py-1.5">
+            </div>
+            <div>
+                <label class="label text-xs mb-1">{{ __('Até') }}</label>
+                <input type="date" name="date_to" value="{{ request('date_to') }}" class="input text-sm py-1.5">
+            </div>
+            <button type="submit" class="btn-primary btn-sm">
+                <i class="fas fa-filter"></i> {{ __('Filtrar') }}
+            </button>
+            @if (request()->hasAny(['action', 'search', 'date_from', 'date_to']))
+                <a href="{{ route('activity-logs.index') }}" class="btn-ghost btn-sm">
+                    <i class="fas fa-times"></i> {{ __('Limpar') }}
+                </a>
+            @endif
+        </form>
     </div>
 
     <div class="card overflow-hidden">

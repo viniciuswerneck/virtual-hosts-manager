@@ -24,6 +24,14 @@
             </div>
 
             <div>
+                <label class="label" for="server_aliases"><i class="fas fa-list mr-1.5 text-gray-400"></i>{{ __('Aliases do Servidor') }}</label>
+                <input type="text" name="server_aliases" id="server_aliases" value="{{ old('server_aliases', $virtualHost->server_aliases) }}"
+                       class="input {{ $errors->has('server_aliases') ? 'input-error' : '' }}"
+                       placeholder="www.meusite.local, meusite.dev">
+                <p class="text-xs text-gray-400 mt-1.5">{{ __('Separados por vírgula. Ex:') }} www.meusite.local, meusite.dev</p>
+            </div>
+
+            <div>
                 <label class="label" for="document_root"><i class="fas fa-folder mr-1.5 text-gray-400"></i>{{ __('Diretório Raiz') }}</label>
                 <div class="flex gap-2">
                     <input type="text" name="document_root" id="document_root" value="{{ old('document_root', $virtualHost->document_root) }}"

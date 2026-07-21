@@ -12,10 +12,14 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('Detalhes do virtual host') }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('virtual-hosts.edit', $virtualHost) }}" class="btn-primary btn-sm">
+            <a href="{{ $virtualHost->ssl_enabled ? 'https' : 'http' }}://{{ $virtualHost->server_name }}" target="_blank" rel="noopener noreferrer"
+               class="btn-primary btn-sm" title="{{ __('Abrir no browser') }}">
+                <i class="fas fa-external-link-alt"></i> {{ __('Abrir') }}
+            </a>
+            <a href="{{ route('virtual-hosts.edit', $virtualHost) }}" class="btn-secondary btn-sm">
                 <i class="fas fa-edit"></i> {{ __('Editar') }}
             </a>
-            <a href="{{ route('virtual-hosts.index') }}" class="btn-secondary btn-sm">
+            <a href="{{ route('virtual-hosts.index') }}" class="btn-ghost btn-sm">
                 <i class="fas fa-arrow-left"></i> {{ __('Voltar') }}
             </a>
         </div>
@@ -40,6 +44,10 @@
                                target="_blank" class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 text-xs" title="{{ __('Abrir site') }}">
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
+                            <button type="button" onclick="testDns('{{ $virtualHost->server_name }}')"
+                               class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors text-xs" title="{{ __('Testar DNS') }}">
+                                <i class="fas fa-network-wired"></i>
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -157,6 +165,9 @@
     </div>
 
     <div class="mt-5 flex gap-2 flex-wrap">
+        <a href="{{ route('virtual-hosts.clone', $virtualHost) }}" class="btn-secondary btn-sm">
+            <i class="fas fa-clone"></i> {{ __('Clonar') }}
+        </a>
         @if ($virtualHost->ssl_enabled)
         <form action="{{ route('virtual-hosts.regenerate-cert', $virtualHost) }}" method="POST" class="inline"
               onsubmit="return confirm('{{ __('Regenerar certificado SSL para') }} {{ $virtualHost->server_name }}?')">
@@ -183,4 +194,41 @@
             </button>
         </form>
     </div>
+
+    <div id="dns-result" class="hidden mt-4 card p-4 max-w-2xl">
+        <div class="flex items-center gap-2 mb-2">
+            <i class="fas fa-network-wired text-gray-400"></i>
+            <span class="font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('Teste de DNS') }}</span>
+        </div>
+        <div id="dns-content" class="text-sm text-gray-600 dark:text-gray-400 font-mono whitespace-pre-wrap"></div>
+    </div>
+
+    <script>
+        function testDns(hostname) {
+            var result = document.getElementById('dns-result');
+            var content = document.getElementById('dns-content');
+            result.classList.remove('hidden');
+            content.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> {{ __("Testando...") }}';
+
+            fetch('/api/dns-test/' + encodeURIComponent(hostname))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var html = '';
+                    if (data.resolved) {
+                        html += '<span class="text-emerald-500"><i class="fas fa-check-circle"></i> {{ __("Resolvido") }}</span>: ' + data.ip + '\n';
+                    } else {
+                        html += '<span class="text-red-500"><i class="fas fa-times-circle"></i> {{ __("Não resolvido") }}</span>\n';
+                    }
+                    if (data.ping_ms !== null) {
+                        html += '{{ __("Ping") }}: ' + data.ping_ms + 'ms (TTL)\n';
+                    }
+                    html += '\n' + data.raw;
+                    content.textContent = '';
+                    content.innerHTML = html.replace(/\n/g, '<br>');
+                })
+                .catch(function() {
+                    content.innerHTML = '<span class="text-red-500">{{ __("Erro ao testar DNS") }}</span>';
+                });
+        }
+    </script>
 @endsection

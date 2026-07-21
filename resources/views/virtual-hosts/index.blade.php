@@ -153,6 +153,10 @@
                                     <button type="button" onclick="openInVSCode('{{ $vhost->document_root }}')" class="text-blue-400 hover:text-blue-600 transition-colors" title="{{ __('Abrir no VS Code') }}">
                                         <i class="fas fa-code text-xs"></i>
                                     </button>
+                                    <a href="file:///{{ str_replace('/', '\\', $vhost->document_root) }}" target="_blank"
+                                       class="text-blue-400 hover:text-blue-600 transition-colors" title="{{ __('Abrir no Explorer') }}">
+                                        <i class="fas fa-folder-open text-xs"></i>
+                                    </a>
                                 </div>
                                 @if ($vhost->template)
                                     <span class="badge-gray mt-1">{{ $vhost->template }}</span>
@@ -200,6 +204,9 @@
                                     </a>
                                     <a href="{{ route('virtual-hosts.edit', $vhost) }}" title="{{ __('Editar') }}" class="btn-ghost btn-xs p-1.5 text-blue-600 dark:text-blue-400">
                                         <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ route('virtual-hosts.clone', $vhost) }}" title="{{ __('Clonar') }}" class="btn-ghost btn-xs p-1.5 text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-clone"></i>
                                     </a>
                                     @if ($vhost->ssl_enabled)
                                     <form action="{{ route('virtual-hosts.regenerate-cert', $vhost) }}" method="POST" class="inline"

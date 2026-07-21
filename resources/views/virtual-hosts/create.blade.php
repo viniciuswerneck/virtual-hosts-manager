@@ -24,6 +24,14 @@
             </div>
 
             <div>
+                <label class="label" for="server_aliases"><i class="fas fa-list mr-1.5 text-gray-400"></i>{{ __('Aliases do Servidor') }}</label>
+                <input type="text" name="server_aliases" id="server_aliases" value="{{ old('server_aliases') }}"
+                       class="input {{ $errors->has('server_aliases') ? 'input-error' : '' }}"
+                       placeholder="www.meusite.local, meusite.dev">
+                <p class="text-xs text-gray-400 mt-1.5">{{ __('Separados por vírgula. Ex:') }} www.meusite.local, meusite.dev</p>
+            </div>
+
+            <div>
                 <label class="label" for="document_root"><i class="fas fa-folder mr-1.5 text-gray-400"></i>{{ __('Diretório Raiz') }}</label>
                 <div class="flex gap-2">
                     <input type="text" name="document_root" id="document_root" value="{{ old('document_root', config('virtualhosts.default_document_root')) }}"
@@ -40,8 +48,12 @@
 
             <div>
                 <label class="label" for="port"><i class="fas fa-plug mr-1.5 text-gray-400"></i>{{ __('Porta') }}</label>
-                <input type="number" name="port" id="port" value="{{ old('port', 80) }}"
-                       class="input {{ $errors->has('port') ? 'input-error' : '' }}">
+                <div class="flex gap-2 items-center">
+                    <input type="number" name="port" id="port" value="{{ old('port', 80) }}"
+                           class="input {{ $errors->has('port') ? 'input-error' : '' }}"
+                           onblur="checkPort(this.value)">
+                    <span id="port-status" class="text-xs hidden"></span>
+                </div>
                 @error('port')
                     <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
                 @enderror
@@ -122,5 +134,26 @@
                 }
             });
         });
+
+        function checkPort(port) {
+            var status = document.getElementById('port-status');
+            if (!port || port < 1 || port > 65535) {
+                status.classList.add('hidden');
+                return;
+            }
+            fetch('/api/port-check/' + port)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    status.classList.remove('hidden');
+                    if (data.available) {
+                        status.innerHTML = '<i class="fas fa-check-circle text-emerald-500"></i> {{ __("Disponível") }}';
+                    } else {
+                        status.innerHTML = '<i class="fas fa-exclamation-triangle text-amber-500"></i> {{ __("Em uso") }} por ' + (data.info ? data.info.process : '—');
+                    }
+                })
+                .catch(function() {
+                    status.classList.add('hidden');
+                });
+        }
     </script>
 @endsection

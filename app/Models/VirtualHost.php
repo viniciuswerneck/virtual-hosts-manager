@@ -11,6 +11,7 @@ class VirtualHost extends Model
 
     protected $fillable = [
         'server_name',
+        'server_aliases',
         'document_root',
         'ssl_enabled',
         'port',

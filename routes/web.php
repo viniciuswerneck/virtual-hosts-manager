@@ -7,6 +7,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileManagerController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\VirtualHostController;
+use App\Services\DnsTestService;
+use App\Services\PortScannerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
@@ -78,6 +80,17 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/restart-apache', [VirtualHostController::class, 'restartApache'])->name('virtual-hosts.restart');
     Route::post('/virtual-hosts/{virtual_host}/toggle', [VirtualHostController::class, 'toggleActive'])->name('virtual-hosts.toggle');
     Route::post('/virtual-hosts/{virtual_host}/regenerate-cert', [VirtualHostController::class, 'regenerateCert'])->name('virtual-hosts.regenerate-cert');
+    Route::get('/virtual-hosts/{virtual_host}/clone', [VirtualHostController::class, 'clone'])->name('virtual-hosts.clone');
+    Route::post('/virtual-hosts/{virtual_host}/clone', [VirtualHostController::class, 'cloneStore'])->name('virtual-hosts.clone-store');
+    Route::get('/api/port-check/{port}', function (int $port, PortScannerService $scanner) {
+        return response()->json([
+            'available' => $scanner->isPortAvailable($port),
+            'info' => $scanner->getPortInfo($port),
+        ]);
+    })->name('api.port-check');
+    Route::get('/api/dns-test/{hostname}', function (string $hostname, DnsTestService $dns) {
+        return response()->json($dns->testResolution($hostname));
+    })->name('api.dns-test');
     Route::get('/virtual-hosts/export/json', [VirtualHostController::class, 'exportJson'])->name('virtual-hosts.export');
     Route::post('/virtual-hosts/import/json', [VirtualHostController::class, 'importJson'])->name('virtual-hosts.import');
 
@@ -88,6 +101,7 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/backup/import', [VirtualHostController::class, 'importFullBackup'])->name('backup.import');
 
     Route::get('/audit-log', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/audit-log/export', [ActivityLogController::class, 'export'])->name('activity-logs.export');
 
     Route::get('/files', [FileManagerController::class, 'index'])->name('file-manager.index');
     Route::get('/files/show', [FileManagerController::class, 'show'])->name('file-manager.show');

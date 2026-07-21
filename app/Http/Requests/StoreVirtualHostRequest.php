@@ -49,6 +49,7 @@ class StoreVirtualHostRequest extends FormRequest
             'port' => 'integer|min:1|max:65535',
             'notes' => 'nullable|string',
             'github_url' => 'nullable|url',
+            'server_aliases' => 'nullable|string',
         ];
     }
 

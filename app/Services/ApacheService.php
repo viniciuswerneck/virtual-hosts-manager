@@ -121,6 +121,10 @@ class ApacheService
             $lines[] = '# -----------------------------';
             $lines[] = "<VirtualHost *:{$port}>";
             $lines[] = "    ServerName {$name}";
+            if (! empty($vhost['server_aliases'])) {
+                $aliases = array_map('trim', explode(',', $vhost['server_aliases']));
+                $lines[] = '    ServerAlias '.implode(' ', $aliases);
+            }
             $lines[] = "    DocumentRoot \"{$root}\"";
             $lines[] = '';
 
@@ -151,6 +155,10 @@ class ApacheService
 
                 $lines[] = "<VirtualHost *:{$this->sslPort}>";
                 $lines[] = "    ServerName {$name}";
+                if (! empty($vhost['server_aliases'])) {
+                    $aliases = array_map('trim', explode(',', $vhost['server_aliases']));
+                    $lines[] = '    ServerAlias '.implode(' ', $aliases);
+                }
                 $lines[] = "    DocumentRoot \"{$root}\"";
                 $lines[] = '';
                 $lines[] = "    <Directory \"{$root}\">";
